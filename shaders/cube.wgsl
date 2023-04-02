@@ -32,8 +32,6 @@ var<uniform> camera_data: CameraData;
 
 @group(1) @binding(0)
 var<storage, read_write> light_data: Light;
-@group(1) @binding(1)
-var<storage, read_write> light_data2: Light;
 
 @group(2) @binding(0)
 var<storage, read_write> cube_material : TemplateMaterial;
@@ -63,7 +61,7 @@ fn vs_main(
 }
 
 fn calc_light(in: VertexOutput, light : Light) -> vec3<f32> {
-    let ambient_strength = 0.1;
+    let ambient_strength = 0.3;
     let ambient : vec3<f32> = light.ambient * ambient_strength * cube_material.ambient;
   	
     // diffuse 
@@ -85,9 +83,7 @@ fn calc_light(in: VertexOutput, light : Light) -> vec3<f32> {
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     
     var result : vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
-
     result += calc_light(in, light_data);
-    result += calc_light(in, light_data2);
 
     return vec4<f32>(result, 1.0);
 }

@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use cgmath::{Vector3, InnerSpace};
 use winit::event::VirtualKeyCode;
 
-use crate::engine::engine::EngineData;
+use crate::engine::{engine::EngineData, buffers::uniform_buffer::UniformBuffer};
 
 pub struct Camera {
     pub position : Vector3<f32>,
@@ -124,6 +124,12 @@ impl Camera {
         let mut data = self.get_view_projection_matrix();
         data.push([self.position.x, self.position.y, self.position.z, 0.0]);
         return data;
+    }
+
+    pub fn as_uniform_buffer(&self, device : &wgpu::Device) -> UniformBuffer {
+        let camera_data = self.get_camera_data();
+        let buffer_size = std::mem::size_of::<[f32; 4]>() * camera_data.len();
+        UniformBuffer::new(&device, &camera_data, buffer_size as u64)
     }
 
 }

@@ -120,28 +120,6 @@ impl Camera {
         return mx_ref.to_vec();
     }
 
-    // pub fn point3_to_clip_space(&self, point : [f32; 4]) -> [f32; 4] {
-    //     let view_matrix = cgmath::Matrix4::look_at_rh(
-    //         vector3_to_point3(self.position),
-    //         vector3_to_point3(self.position + self.forward),
-    //         Vector3::unit_y(),
-    //     );
-
-    //     let projection_matrix = cgmath::perspective(
-    //         cgmath::Deg(45.0), 
-    //         self.aspect_ratio, 
-    //         0.1,
-    //         1000.0
-    //     );
-
-    //     let mat = OPENGL_TO_WGPU_MATRIX * projection_matrix * view_matrix; 
-    //     let mx_ref : [[f32; 4]; 4] = mat.into();
-    //     let mx = cgmath::Matrix4::from(mx_ref);
-    //     // let p = cgmath::Point4::new(point[0], point[1], point[2], point[3]);
-    //     let p = mx * p;
-    //     return [p.x, p.y, p.z, p.w];
-    // } 
-
     pub fn get_camera_data(&self) -> Vec<[f32; 4]> {
         let mut data = self.get_view_projection_matrix();
         data.push([self.position.x, self.position.y, self.position.z, 0.0]);

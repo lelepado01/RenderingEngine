@@ -67,7 +67,7 @@ impl ImguiEngine {
                 view: &view,
                 resolve_target: None,
                 ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Load, // Do not clear
+                    load: wgpu::LoadOp::Load, 
                     // load: wgpu::LoadOp::Clear(clear_color),
                     store: true,
                 },

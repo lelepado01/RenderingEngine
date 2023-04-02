@@ -1,5 +1,7 @@
 use bytemuck::{Pod, Zeroable};
 
+use crate::engine::utils::array_extentions::ToArray4;
+
 pub enum VertexType {
     Vertex,
 }
@@ -21,8 +23,8 @@ impl ModelVertex {
     #[allow(dead_code)]
     pub fn new(pos : [f32; 3], normal : [f32; 3]) -> Self {
         ModelVertex {
-            _pos: [pos[0], pos[1], pos[2], 1.0],
-            _normal: [normal[0], normal[1], normal[2], 1.0],
+            _pos: pos.to_arr4(),
+            _normal: normal.to_arr4(),
             _tex_coord: [0.0, 0.0],
         }
     }

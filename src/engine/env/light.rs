@@ -1,4 +1,3 @@
-// use crate::engine::builders::pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, LayoutEntryType, EntryVisibility};
 use crate::engine::utils::array_extentions::ToArray4;
 
 #[repr(C)]
@@ -11,10 +10,10 @@ pub struct LightData {
 }
 
 impl LightData {
-    pub fn new() -> Self {
+    pub fn new(pos : [f32; 3]) -> Self {
 
         Self {
-            position : [15.0, 0.0, 15.0],
+            position : pos,
             ambient : [0.5, 0.5, 0.5],
             diffuse : [0.2, 0.1, 0.1],
             specular : [0.1, 0.1, 0.1],

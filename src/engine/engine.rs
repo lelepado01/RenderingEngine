@@ -79,10 +79,6 @@ impl EngineData {
         &self.keys_pressed
     }
 
-    // pub fn get_depth_texture(&self) -> &wgpu::TextureView {
-    //     &self.depth_texture
-    // }
-
     pub fn delta_time(&self) -> f32 {
         self.clock.frame_duration().as_secs_f32()
     }

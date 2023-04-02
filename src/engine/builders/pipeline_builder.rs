@@ -95,9 +95,9 @@ impl<'a> PipelineBuilder<'a> {
             vertex: vertex_state,
             fragment: Some(fragment_state),
             primitive: wgpu::PrimitiveState {
-                topology, // 1.
+                topology, 
                 strip_index_format: None,
-                front_face: wgpu::FrontFace::Ccw, // 2.
+                front_face: wgpu::FrontFace::Ccw, 
                 cull_mode: self.primitive_state_cull_mode,
                 polygon_mode: wgpu::PolygonMode::Fill,
                 unclipped_depth: false,
@@ -106,16 +106,16 @@ impl<'a> PipelineBuilder<'a> {
             depth_stencil: Some(wgpu::DepthStencilState {
                 format: wgpu::TextureFormat::Depth32Float,
                 depth_write_enabled: true,
-                depth_compare: wgpu::CompareFunction::Less, // 1.
-                stencil: wgpu::StencilState::default(), // 2.
+                depth_compare: wgpu::CompareFunction::Less, 
+                stencil: wgpu::StencilState::default(),
                 bias: wgpu::DepthBiasState::default(),
-            }), // 1.
+            }), 
             multisample: wgpu::MultisampleState {
-                count: 1, // 2.
-                mask: !0, // 3.
-                alpha_to_coverage_enabled: false, // 4.
+                count: 1, 
+                mask: !0, 
+                alpha_to_coverage_enabled: false,
             },
-            multiview: None, // 5.
+            multiview: None, 
         })
     }
 }

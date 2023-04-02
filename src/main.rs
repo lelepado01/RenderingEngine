@@ -1,5 +1,3 @@
-// #![allow(dead_code)]
-
 use engine::{engine_utils, env::{self, light::LightData}};
 use imgui::*;
 use winit::{
@@ -17,9 +15,8 @@ fn main() {
     let window_size = engine.get_window_size();
 
     let mut camera = env::camera::Camera::new(window_size.0 as f32 / window_size.1 as f32);
-    let mut light = LightData::new();
-    let mut light2 = LightData::new();
-    light2.position = [10.0, 0.0, 0.0];
+    let mut light = LightData::new([0.0, 0.0, 0.0]);
+    let light2 = LightData::new([10.0, 0.0, 0.0]);
 
     let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.surface_engine.get_surface_desc(), &engine.get_device(), &engine.get_queue(), &camera, &light, &light2);
 

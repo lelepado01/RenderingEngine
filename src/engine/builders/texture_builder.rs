@@ -50,7 +50,7 @@ impl TextureBuilder {
                 texture_size : texture_size,
             }
         } else {
-            let size = wgpu::Extent3d { // 2.
+            let size = wgpu::Extent3d { 
                 width: 1,
                 height: 1,
                 depth_or_array_layers: 1,

@@ -31,6 +31,7 @@ impl InstancedModel {
         }
     }
 
+    #[allow(dead_code)]
     pub fn update_instances<T>(&mut self, device: &wgpu::Device, instances: Vec<T>) 
     where T : bytemuck::Pod + bytemuck::Zeroable
     {

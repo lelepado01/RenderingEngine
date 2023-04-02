@@ -33,6 +33,7 @@ impl TimeUtils {
         1.0 / self.delta_s
     }
 
+    #[allow(dead_code)]
     pub fn get_time(&self) -> f32 {
         self.time
     }

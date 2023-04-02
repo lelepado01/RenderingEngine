@@ -5,6 +5,7 @@ pub enum LayoutEntryType {
     Sampler,
 }
 
+#[allow(dead_code)]
 pub enum EntryVisibility {
     Vertex,
     Fragment,

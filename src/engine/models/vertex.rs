@@ -18,6 +18,7 @@ pub struct ModelVertex {
 }
 
 impl ModelVertex {
+    #[allow(dead_code)]
     pub fn new(pos : [f32; 3], normal : [f32; 3]) -> Self {
         ModelVertex {
             _pos: [pos[0], pos[1], pos[2], 1.0],

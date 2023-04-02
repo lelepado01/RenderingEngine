@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+// #![allow(dead_code)]
 
 use engine::{engine_utils, env::{self, light::LightData}};
 use imgui::*;
@@ -19,8 +19,7 @@ fn main() {
     let mut camera = env::camera::Camera::new(window_size.0 as f32 / window_size.1 as f32);
     let mut light = LightData::new();
     let mut light2 = LightData::new();
-    light2.set_position([10.0, 0.0, 0.0]);
-    // light.position = camera.get_view_projection_matrix() * light.position;
+    light2.position = [10.0, 0.0, 0.0];
 
     let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.surface_engine.get_surface_desc(), &engine.get_device(), &engine.get_queue(), &camera, &light, &light2);
 
@@ -106,11 +105,11 @@ fn main() {
                         let mut camera_rotation : [f32; 3] = camera.forward.into();
                         ui.input_float3("Camera rotation", &mut camera_rotation).build();  
 
-                        let mut light_position : [f32; 3] = light.get_position(); 
+                        let mut light_position : [f32; 3] = light.position; 
                         ui.slider("Light position x", -10.0, 10.0, &mut light_position[0]); 
                         ui.slider("Light position y", -10.0, 10.0, &mut light_position[1]);
                         ui.slider("Light position z", -10.0, 10.0, &mut light_position[2]);
-                        light.set_position(light_position); 
+                        light.position = light_position; 
                     }
                 );                 
                 

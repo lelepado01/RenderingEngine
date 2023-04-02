@@ -70,6 +70,7 @@ impl EngineData {
         self.mouse_position
     }
 
+    #[allow(dead_code)]
     pub fn get_key_pressed(&self, keycode : winit::event::VirtualKeyCode) -> bool {
         self.keys_pressed.contains(&keycode)
     }
@@ -78,9 +79,9 @@ impl EngineData {
         &self.keys_pressed
     }
 
-    pub fn get_depth_texture(&self) -> &wgpu::TextureView {
-        &self.depth_texture
-    }
+    // pub fn get_depth_texture(&self) -> &wgpu::TextureView {
+    //     &self.depth_texture
+    // }
 
     pub fn delta_time(&self) -> f32 {
         self.clock.frame_duration().as_secs_f32()

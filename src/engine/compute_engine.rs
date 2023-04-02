@@ -18,7 +18,7 @@ impl<T : Pod> ComputeEngine<T> {
     pub fn init(device : &Device, data : Vec<T>) -> Self {
         let cs_module = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,
-            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("../shaders/shader.wgsl"))),
+            source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!("../../shaders/shader.wgsl"))),
         });
 
         let compute_pipeline = device.create_compute_pipeline(&wgpu::ComputePipelineDescriptor {

@@ -60,8 +60,8 @@ impl MeshEngine {
             .add_vertex_buffer_layout(PositionInstanceData::desc())
             .set_primitive_state(Some(wgpu::Face::Back))
             .set_wireframe_mode(false)  
-            .set_vertex_shader(device, "src/shaders/cube.wgsl", VertexType::Vertex)
-            .set_fragment_shader(device, "src/shaders/cube.wgsl", &config.format)
+            .set_vertex_shader(device, "./shaders/cube.wgsl", VertexType::Vertex)
+            .set_fragment_shader(device, "./shaders/cube.wgsl", &config.format)
             .set_pipeline_layout(pipeline_layout)
             .build(device);
 

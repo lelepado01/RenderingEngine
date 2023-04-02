@@ -1,7 +1,8 @@
 use tobj::Material;
 
 use super::{mesh::Mesh, material::{TemplateMaterial}, vertex::ModelVertex};
-use crate::engine::{builders::{buffers, texture_builder::{create_sampler, TextureBuilder, TextureType}, self, pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, LayoutEntryType, EntryVisibility}}};
+use crate::engine::{builders::{texture_builder::{create_sampler, TextureBuilder, TextureType}, self, pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, LayoutEntryType, EntryVisibility}}};
+use crate::engine::buffers;
 
 pub struct Model {
     pub meshes : Vec<Mesh>,

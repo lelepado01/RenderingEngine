@@ -1,7 +1,6 @@
-use crate::engine::builders::buffers;
-use super::buffers::BufferType;
-use super::pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, EntryVisibility, LayoutEntryType};
-use super::pipeline_bind_group_builder::BindGroupBuilder;
+use crate::engine::buffers::{self, BufferType};
+use crate::engine::builders::pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, EntryVisibility, LayoutEntryType};
+use crate::engine::builders::pipeline_bind_group_builder::BindGroupBuilder;
 
 pub struct UniformBuffer {
     pub buffers: Vec<(wgpu::Buffer, u64)>,

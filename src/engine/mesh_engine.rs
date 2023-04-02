@@ -1,7 +1,5 @@
 use crate::engine::builders::pipeline_layout_builder::PipelineLayoutBuilder;
-use crate::engine::builders::storage_buffer::SetStorageBuffer;
-use super::builders::storage_buffer::StorageBuffer;
-use super::builders::uniform_buffer::{UniformBuffer, SetUniformBuffer};
+use crate::engine::buffers::{uniform_buffer::{UniformBuffer, SetUniformBuffer}, storage_buffer::{StorageBuffer, SetStorageBuffer}};
 use super::env::camera::Camera;
 use super::env::light::LightData;
 use super::models::instance_data::{PositionInstanceData, InstanceData};

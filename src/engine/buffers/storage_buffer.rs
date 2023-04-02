@@ -1,5 +1,4 @@
-use super::{buffers::{self, BufferType}, pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, LayoutEntryType, EntryVisibility}, pipeline_bind_group_builder::BindGroupBuilder};
-
+use crate::engine::{buffers::{self, BufferType}, builders::{pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, EntryVisibility, LayoutEntryType}, pipeline_bind_group_builder::BindGroupBuilder}}; 
 
 pub struct StorageBuffer {
     pub buffers: Vec<(wgpu::Buffer, u64)>,

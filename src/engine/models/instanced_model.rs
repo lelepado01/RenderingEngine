@@ -1,4 +1,4 @@
-use crate::engine::builders::buffers;
+use crate::engine::buffers;
 use super::{material::TemplateMaterial, mesh::Mesh, instance_data::InstanceData};
 
 pub struct InstancedModel {

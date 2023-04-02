@@ -1,3 +1,5 @@
+pub mod uniform_buffer;
+pub mod storage_buffer;
 
 use wgpu::util::DeviceExt; 
 

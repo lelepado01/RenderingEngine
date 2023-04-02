@@ -1,10 +1,10 @@
 use crate::engine::builders::pipeline_layout_builder::PipelineLayoutBuilder;
 use crate::engine::buffers::{uniform_buffer::{UniformBuffer, SetUniformBuffer}, storage_buffer::{StorageBuffer, SetStorageBuffer}};
+use super::entity_data;
 use super::env::camera::Camera;
-use super::env::light::LightData;
+use super::env::light::Bufferable;
 use super::models::instance_data::{PositionInstanceData, InstanceData};
 use super::models::vertex::{ModelVertex, VertexType, VertexData};
-use super::models::{instanced_model};
 use crate::engine::builders::pipeline_builder::PipelineBuilder;
 use crate::engine::builders;
 use crate::engine::models::rendering::DrawModel;
@@ -13,47 +13,28 @@ pub struct MeshEngine {
     uniform_buffers: Vec<UniformBuffer>,
     storage_buffers: Vec<StorageBuffer>,
     pipeline: wgpu::RenderPipeline,
-    models: Vec<instanced_model::InstancedModel>,
 }
 
 impl MeshEngine {
     pub fn init(
         device: &wgpu::Device,
-        queue : &wgpu::Queue,
         config: &wgpu::SurfaceConfiguration,
         camera: &Camera,
-        light : &LightData,
-        light2 : &LightData,
+        entity_data : &entity_data::EntityData,
     ) -> Self {
-        
-        let mut poss = Vec::<[f32; 4]>::new();
-        
-        for i in 0..10 {
-            for j in 0..10 {
-                poss.push([2.0 * i as f32, 0.0 as f32, 2.0* j as f32, 1.0]);
-            }
-        }
 
-        let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: x }).collect();
-        let model = instanced_model::InstancedModel::load_model(
-            device, 
-            queue,
-            "assets/cube.obj", 
-            instances,
-        ).expect("Failed to create OBJ model"); 
+        let camera_uniform = camera.as_uniform_buffer(device);
+        let light_data = entity_data.lights.as_storage_buffer(device);
 
-        let camera_data = camera.get_camera_data();
-        let buffer_size = std::mem::size_of::<[f32; 4]>() * camera_data.len();
-        let camera_uniform = UniformBuffer::new(&device, &camera_data, buffer_size as u64); 
-        
-        let mut light_data = StorageBuffer::new(&device, &light.as_vec(), light.size() as u64); 
-        light_data.add_binding(device, &light2.as_vec(), light2.size() as u64);
-
-        let pipeline_layout = PipelineLayoutBuilder::new()
+        let mut pipeline_layout_builder = PipelineLayoutBuilder::new()
             .add_bind_group_layout(&camera_uniform.bind_group_layout)
-            .add_bind_group_layout(&light_data.bind_group_layout)
-            .add_bind_group_layout(&model.materials[0].bind_group_layout)
-            .build(device);
+            .add_bind_group_layout(&light_data.bind_group_layout);     
+        let models = &entity_data.instanced_models; 
+        for model in models {
+            pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.materials[0].bind_group_layout);
+        }
+        // TODO: add bindings for normal models
+        let pipeline_layout = pipeline_layout_builder.build(device);
 
         let pipeline = PipelineBuilder::new()
             .add_vertex_buffer_layout(ModelVertex::desc())
@@ -66,24 +47,18 @@ impl MeshEngine {
             .build(device);
 
         MeshEngine {
+            pipeline,
             uniform_buffers: vec![camera_uniform],
             storage_buffers: vec![light_data],
-            pipeline,
-            models: vec![model],
         }
     }
 
-    pub fn update(&mut self, camera: &Camera, light : &LightData, device: &wgpu::Device) {
-
-        let camera_data = camera.get_camera_data(); 
-        let buffer_size = std::mem::size_of::<[f32; 4]>() * camera_data.len(); 
-
-        self.uniform_buffers[0].update(device, 0, &camera_data, buffer_size as u64);
-
-        self.storage_buffers[0].update(device, 0, &light.as_vec(), light.size() as u64);
+    pub fn update(&mut self, device: &wgpu::Device, camera: &Camera, entity_data : &entity_data::EntityData) {
+        self.uniform_buffers[0] = camera.as_uniform_buffer(device);
+        self.storage_buffers[0] = entity_data.lights.as_storage_buffer(device);
     }
 
-    pub fn render(&mut self, view: &wgpu::TextureView, depth_texture_view : &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder) {
+    pub fn render(&mut self, view: &wgpu::TextureView, depth_texture_view : &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, entity_data : &entity_data::EntityData,) {
 
         {
             let mut rpass = builders::pipeline_builder::create_render_pass(view, depth_texture_view, encoder);
@@ -95,7 +70,9 @@ impl MeshEngine {
             for i in 0..self.storage_buffers.len() {
                 rpass.set_storage_buffer((self.uniform_buffers.len() + i) as u32, &self.storage_buffers[i]);
             }
-            rpass.draw_model_instanced((self.uniform_buffers.len() + self.storage_buffers.len()) as u32, &self.models[0]);
+            for i in 0..entity_data.instanced_models.len() {
+                rpass.draw_model_instanced((self.uniform_buffers.len() + self.storage_buffers.len() + i) as u32, &entity_data.instanced_models[i]);
+            }
         }
     }
 }

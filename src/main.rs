@@ -1,9 +1,10 @@
-use engine::{engine_utils, env::{self, light::LightData}};
+use engine::{utils, env::{self, light::LightData}, models::{instance_data::PositionInstanceData, instanced_model}, entity_data};
 use imgui::*;
 use winit::{
     event::{ElementState, Event, KeyboardInput, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
 };
+use crate::engine::entity_data::EntityData;
 
 mod engine;
 
@@ -16,12 +17,28 @@ fn main() {
 
     let mut camera = env::camera::Camera::new(window_size.0 as f32 / window_size.1 as f32);
     let mut light = LightData::new([0.0, 0.0, 0.0]);
-    let light2 = LightData::new([10.0, 0.0, 0.0]);
 
-    let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.get_queue(), &engine.surface_engine.get_surface_desc(), &camera, &light, &light2);
+    let mut poss = Vec::<[f32; 4]>::new();
+        
+    for i in 0..100 {
+        for j in 0..100 {
+            poss.push([2.0 * i as f32, 0.0 as f32, 2.0* j as f32, 1.0]);
+        }
+    }
+    let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: x }).collect();
+    let model = instanced_model::InstancedModel::load_model(
+        &engine.get_device(), 
+        &engine.get_queue(),
+        "assets/cube.obj", 
+        instances,
+    ).expect("Failed to create OBJ model"); 
+
+    let entity_data = EntityData::new(vec![light], vec![&model], vec![]);
+
+    let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &camera, &entity_data);
 
     event_loop.run(move |event, _, control_flow| {
-        *control_flow = engine_utils::get_control_flow_status();
+        *control_flow = utils::get_control_flow_status();
 
         match event {
             Event::WindowEvent {
@@ -78,14 +95,16 @@ fn main() {
                 camera.update(delta_time, &engine);
                 engine.update();
 
-                mesh_engine.update(&camera, &light, &engine.get_device()); 
+                let entity_data = EntityData::new(vec![light], vec![&model], vec![]);
+
+                mesh_engine.update(&engine.get_device(), &camera, &entity_data); 
 
                 let mut encoder = engine.get_encoder();
                 let ui = engine.imgui_engine.imgui_context.frame();
 
                 engine.surface_engine.begin_frame();
 
-                mesh_engine.render(&engine.surface_engine.get_view(), &engine.depth_texture, &mut encoder);
+                mesh_engine.render(&engine.surface_engine.get_view(), &engine.depth_texture, &mut encoder, &entity_data);
 
                 ui.window("Utils")
                     .size([400.0, 300.0], Condition::FirstUseEver)

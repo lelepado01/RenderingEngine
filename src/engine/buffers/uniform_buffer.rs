@@ -57,6 +57,7 @@ impl UniformBuffer {
         self.bind_group = bind_group;
     }
 
+    #[allow(dead_code)]
     pub fn update<T>(&mut self, device: &wgpu::Device, binding_index : usize, data: &Vec<T>, size : u64) 
     where 
         T: bytemuck::Pod + bytemuck::Zeroable,

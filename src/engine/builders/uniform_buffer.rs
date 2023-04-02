@@ -14,7 +14,7 @@ impl UniformBuffer {
     where 
         T: bytemuck::Pod + bytemuck::Zeroable,
     {
-        let buffer = buffers::create_buffer(BufferType::Uniform, data, device);
+        let buffer = buffers::create_buffer(device, BufferType::Uniform, data);
         
         let uniform_layout = BindGroupLayoutBuilder::new()
             .add_entry(LayoutEntryType::UniformBuffer, EntryVisibility::All, size)
@@ -35,7 +35,7 @@ impl UniformBuffer {
     pub fn add_binding<T>(&mut self, device: &wgpu::Device, data: &Vec<T>, size : u64) 
     where T: bytemuck::Pod + bytemuck::Zeroable,
     {
-        let new_buffer = buffers::create_buffer(BufferType::Uniform, data, device);
+        let new_buffer = buffers::create_buffer(device, BufferType::Uniform, data);
         
         let mut bind_group_builder = BindGroupBuilder::new(); 
         let mut bind_group_layout_builder = BindGroupLayoutBuilder::new();
@@ -62,7 +62,7 @@ impl UniformBuffer {
     where 
         T: bytemuck::Pod + bytemuck::Zeroable,
     {
-        let new_buffer = buffers::create_buffer(BufferType::Uniform, data, device);
+        let new_buffer = buffers::create_buffer(device, BufferType::Uniform, data);
 
         let mut bind_group_builder = BindGroupBuilder::new(); 
 

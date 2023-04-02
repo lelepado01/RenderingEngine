@@ -12,7 +12,7 @@ impl StorageBuffer {
     where 
         T: bytemuck::Pod + bytemuck::Zeroable,
     {
-        let buffer = buffers::create_buffer(BufferType::Storage, data, device);
+        let buffer = buffers::create_buffer(device, BufferType::Storage, data);
         
         let storage_layout = BindGroupLayoutBuilder::new()
             .add_entry(LayoutEntryType::StorageBuffer, EntryVisibility::Fragment, size)
@@ -32,7 +32,7 @@ impl StorageBuffer {
     pub fn add_binding<T>(&mut self, device: &wgpu::Device, data: &Vec<T>, size : u64) 
     where T: bytemuck::Pod + bytemuck::Zeroable,
     {
-        let new_buffer = buffers::create_buffer(BufferType::Storage, data, device);
+        let new_buffer = buffers::create_buffer(device, BufferType::Storage, data);
         
         let mut bind_group_builder = BindGroupBuilder::new(); 
         let mut bind_group_layout_builder = BindGroupLayoutBuilder::new();
@@ -59,7 +59,7 @@ impl StorageBuffer {
     where 
         T: bytemuck::Pod + bytemuck::Zeroable,
     {
-        let new_buffer = buffers::create_buffer(BufferType::Storage, data, device);
+        let new_buffer = buffers::create_buffer(device, BufferType::Storage, data);
 
         let mut bind_group_builder = BindGroupBuilder::new(); 
 

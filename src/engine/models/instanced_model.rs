@@ -18,9 +18,9 @@ impl InstancedModel {
         where T : InstanceData + bytemuck::Pod + bytemuck::Zeroable 
     {
         let instance_buffer = buffers::create_buffer(
+            device,
             buffers::BufferType::Instance, 
             &instances,
-            device
         );
 
         Self {
@@ -36,9 +36,9 @@ impl InstancedModel {
     where T : bytemuck::Pod + bytemuck::Zeroable
     {
         let instance_buffer = buffers::create_buffer(
+            device,
             buffers::BufferType::Instance, 
             &instances,
-            device
         ); 
 
         self.instance_buffer = instance_buffer;
@@ -46,15 +46,15 @@ impl InstancedModel {
     }
 
     pub fn load_model<T>(
-        path: &str,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
+        path: &str,
         instances: Vec<T>,
     ) -> anyhow::Result<Self> 
     where T : InstanceData + bytemuck::Pod + bytemuck::Zeroable
     {
 
-        let model = super::model::load_model(path, device, queue).expect("Failed to load model");
+        let model = super::model::load_model(device, queue, path).expect("Failed to load model");
         Ok(Self::new(device, model.meshes, model.materials, instances))
     }
 }

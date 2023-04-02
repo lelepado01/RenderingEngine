@@ -24,7 +24,7 @@ impl EngineData {
         let (device, queue) = surface_engine.get_device_and_queue();
         surface_engine.update_surface(&device); 
 
-        let imgui_engine = imgui_engine::ImguiEngine::init(&surface_engine.window, &device, &queue, &surface_engine.get_surface_desc());
+        let imgui_engine = imgui_engine::ImguiEngine::init(&device, &queue, &surface_engine.window, &surface_engine.get_surface_desc());
 
         let clock = TimeUtils::new();
 
@@ -122,7 +122,7 @@ impl EngineData {
     }
 
     pub fn end_frame(&mut self, mut encoder : wgpu::CommandEncoder){
-        self.imgui_engine.end_update(self.surface_engine.get_view(), &self.queue, &self.device, &mut encoder);
+        self.imgui_engine.end_update(&self.device, &self.queue, self.surface_engine.get_view(), &mut encoder);
         self.queue.submit(Some(encoder.finish()));
         self.surface_engine.end_frame();
     }

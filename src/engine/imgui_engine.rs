@@ -12,7 +12,7 @@ pub struct ImguiEngine{
 }
 
 impl ImguiEngine {
-    pub fn init(window : &Window, device : &Device, queue : &wgpu::Queue, surface_desc : &SurfaceConfiguration) -> Self {
+    pub fn init(device : &Device, queue : &wgpu::Queue, window : &Window, surface_desc : &SurfaceConfiguration) -> Self {
         let hidpi_factor = window.scale_factor();
         
         let mut imgui = imgui::Context::create();
@@ -43,7 +43,6 @@ impl ImguiEngine {
     
         let renderer = Renderer::new(&mut imgui, &device, &queue, renderer_config);    
 
-
         ImguiEngine {
             imgui_context: imgui,
             platform,
@@ -60,7 +59,7 @@ impl ImguiEngine {
 
     }
     
-    pub fn end_update(&mut self, view : &TextureView, queue : &wgpu::Queue, device : &Device, encoder : &mut wgpu::CommandEncoder) {        
+    pub fn end_update(&mut self, device : &Device, queue : &wgpu::Queue, view : &TextureView, encoder : &mut wgpu::CommandEncoder) {        
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,
             color_attachments: &[Some(wgpu::RenderPassColorAttachment {
@@ -68,7 +67,6 @@ impl ImguiEngine {
                 resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Load, 
-                    // load: wgpu::LoadOp::Clear(clear_color),
                     store: true,
                 },
             })],

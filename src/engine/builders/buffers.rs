@@ -12,9 +12,9 @@ pub enum BufferType {
 }
 
 pub fn create_buffer<T>(
+    device: &wgpu::Device,
     buffer_type: BufferType,
     data: &Vec<T>,
-    device: &wgpu::Device,
 ) -> wgpu::Buffer
 where T : bytemuck::Pod + bytemuck::Zeroable
 {

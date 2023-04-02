@@ -20,9 +20,9 @@ pub struct MeshEngine {
 
 impl MeshEngine {
     pub fn init(
-        config: &wgpu::SurfaceConfiguration,
         device: &wgpu::Device,
         queue : &wgpu::Queue,
+        config: &wgpu::SurfaceConfiguration,
         camera: &Camera,
         light : &LightData,
         light2 : &LightData,
@@ -38,9 +38,9 @@ impl MeshEngine {
 
         let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: x }).collect();
         let model = instanced_model::InstancedModel::load_model(
-            "assets/cube.obj", 
             device, 
             queue,
+            "assets/cube.obj", 
             instances,
         ).expect("Failed to create OBJ model"); 
 

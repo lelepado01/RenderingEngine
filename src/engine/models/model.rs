@@ -9,9 +9,9 @@ pub struct Model {
 }
 
 pub fn load_model(
-    model_path: &str,
     device: &wgpu::Device,
     queue: &wgpu::Queue,
+    model_path: &str,
 ) -> anyhow::Result<Model> {
 
     let (models, materials) = tobj::load_obj(
@@ -32,8 +32,8 @@ pub fn load_model(
                 .map(|i| parse_vertex(i, &m.mesh))
                 .collect::<Vec<_>>();
 
-            let vertex_buffer = buffers::create_buffer(buffers::BufferType::Vertex, &vertices, device);
-            let index_buffer = buffers::create_buffer(buffers::BufferType::Index, &m.mesh.indices, device);
+            let vertex_buffer = buffers::create_buffer(device, buffers::BufferType::Vertex, &vertices);
+            let index_buffer = buffers::create_buffer(device, buffers::BufferType::Index, &m.mesh.indices);
 
             if vertices[0]._normal == [0.0, 0.0, 0.0, 1.0] {
                 for i in (0..m.mesh.indices.len()-3).step_by(3) {
@@ -187,7 +187,7 @@ pub fn parse_material(
         [mat.shininess, mat.dissolve, mat.optical_density, 0.0],
     ];
     let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * data.len() as wgpu::BufferAddress;
-    let mat_buffer = buffers::create_buffer(buffers::BufferType::Storage, &data, device); 
+    let mat_buffer = buffers::create_buffer(device, buffers::BufferType::Storage, &data); 
     if ambient != [0.0, 0.0, 0.0, 1.0] {
         layout_builder.add_entry(LayoutEntryType::StorageBuffer, EntryVisibility::Fragment, size);
         bind_group_builder.add_storage_buffer_entry(&mat_buffer, size);

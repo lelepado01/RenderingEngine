@@ -18,7 +18,7 @@ fn main() {
     let mut light = LightData::new([0.0, 0.0, 0.0]);
     let light2 = LightData::new([10.0, 0.0, 0.0]);
 
-    let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.surface_engine.get_surface_desc(), &engine.get_device(), &engine.get_queue(), &camera, &light, &light2);
+    let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.get_queue(), &engine.surface_engine.get_surface_desc(), &camera, &light, &light2);
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = engine_utils::get_control_flow_status();

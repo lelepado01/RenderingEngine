@@ -28,12 +28,12 @@ impl MeshEngine {
 
         let mut pipeline_layout_builder = PipelineLayoutBuilder::new()
             .add_bind_group_layout(&camera_uniform.bind_group_layout)
-            .add_bind_group_layout(&light_data.bind_group_layout);     
-        let models = &entity_data.instanced_models; 
-        for model in models {
-            pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.materials[0].bind_group_layout);
+            .add_bind_group_layout(&light_data.bind_group_layout);
+
+        for model in &entity_data.instanced_models {
+            pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.material_buffer.bind_group_layout);
         }
-        // TODO: add bindings for normal models
+        // TODO: add bindings for normal models (not instanced)
         let pipeline_layout = pipeline_layout_builder.build(device);
 
         let pipeline = PipelineBuilder::new()

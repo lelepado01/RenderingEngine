@@ -1,12 +1,12 @@
-use tobj::Material;
 
 use super::{mesh::Mesh, material::{TemplateMaterial}, vertex::ModelVertex};
-use crate::engine::{builders::{texture_builder::{create_sampler, TextureBuilder, TextureType}, self, pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, LayoutEntryType, EntryVisibility}}};
+use crate::engine::{builders::{texture_builder::{create_sampler, TextureBuilder, TextureType}, self, pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, LayoutEntryType, EntryVisibility}}, buffers::storage_buffer::StorageBuffer};
 use crate::engine::buffers;
 
 pub struct Model {
     pub meshes : Vec<Mesh>,
-    pub materials : Vec<TemplateMaterial>,
+    // pub materials : &'a Vec<TemplateMaterial>,
+    pub material_buffer : StorageBuffer,
 }
 
 pub fn load_model(
@@ -65,9 +65,20 @@ pub fn load_model(
         })
         .collect::<Vec<_>>();
 
+        let mut data = Vec::new();
+        for material in obj_materials {
+            data.push(material.ambient);
+            data.push(material.diffuse);
+            data.push(material.specular);
+            data.push([material.shininess, material.dissolve, material.optical_density, 0.0]);
+        }
+        let size = (std::mem::size_of::<[f32; 4]>() * data.len()) as wgpu::BufferAddress;
+        let buffer = StorageBuffer::new(device, &data, size);
+
     Ok(Model { 
         meshes, 
-        materials: obj_materials 
+        // materials: &obj_materials, 
+        material_buffer: buffer
     })
 }
 
@@ -135,7 +146,7 @@ pub fn parse_vertex(index : usize, mesh : &tobj::Mesh) -> ModelVertex {
 }
 
 pub fn parse_material(
-    mat : Material, 
+    mat : tobj::Material, 
     device : &wgpu::Device, 
     queue: &wgpu::Queue
 ) -> anyhow::Result<TemplateMaterial> {

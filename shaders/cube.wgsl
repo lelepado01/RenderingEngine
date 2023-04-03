@@ -34,7 +34,7 @@ var<uniform> camera_data: CameraData;
 var<storage, read_write> light_data: Light;
 
 @group(2) @binding(0)
-var<storage, read_write> cube_material : TemplateMaterial;
+var<storage, read_write> cube_material : array<TemplateMaterial>;
 
 // @group(2) @binding(0)
 // var t_diffuse: texture_2d<f32>;
@@ -61,20 +61,26 @@ fn vs_main(
 }
 
 fn calc_light(in: VertexOutput, light : Light) -> vec3<f32> {
+
+    var material_index : i32 = 0;
+    if in.original_position.y >= 0.0 {
+        material_index = 1;
+    }
+
     let ambient_strength = 0.3;
-    let ambient : vec3<f32> = light.ambient * ambient_strength * cube_material.ambient;
+    let ambient : vec3<f32> = light.ambient * ambient_strength * cube_material[material_index].ambient;
   	
     // diffuse 
     let norm : vec3<f32> = normalize(in.normal);
     let lightDir : vec3<f32> = normalize(light.position - in.original_position);
     let diff : f32 = max(dot(norm, lightDir), 0.0);
-    let diffuse : vec3<f32> = light.diffuse * (diff * cube_material.diffuse);
+    let diffuse : vec3<f32> = light.diffuse * (diff * cube_material[material_index].diffuse);
     
     // specular
     let viewDir : vec3<f32> = normalize(camera_data.position - in.original_position);
     let reflectDir : vec3<f32> = reflect(-lightDir, norm);  
-    let spec : f32 = pow(max(dot(viewDir, reflectDir), 0.0), cube_material.shininess);
-    let specular : vec3<f32> = light.specular * (spec * cube_material.specular);  
+    let spec : f32 = pow(max(dot(viewDir, reflectDir), 0.0), cube_material[material_index].shininess);
+    let specular : vec3<f32> = light.specular * (spec * cube_material[material_index].specular);  
         
     return ambient + diffuse + specular;
 }

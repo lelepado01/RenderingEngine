@@ -138,7 +138,7 @@ impl TextureBuilder {
     }
 }
 
-
+#[allow(dead_code)]
 pub fn create_sampler(device : &wgpu::Device) -> wgpu::Sampler {
     device.create_sampler(&wgpu::SamplerDescriptor {
         address_mode_u: wgpu::AddressMode::ClampToEdge,

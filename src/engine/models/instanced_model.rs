@@ -3,7 +3,6 @@ use super::{mesh::Mesh, instance_data::InstanceData};
 
 pub struct InstancedModel {
     pub meshes: Vec<Mesh>,
-    // pub materials: Vec<TemplateMaterial>,
     pub material_buffer: storage_buffer::StorageBuffer,
     pub instance_buffer: wgpu::Buffer,
     pub instance_count: u32,
@@ -13,7 +12,6 @@ impl InstancedModel {
     pub fn new<T>(
         device: &wgpu::Device,
         meshes: Vec<Mesh>,
-        // materials: Vec<TemplateMaterial>,
         material_buffer: storage_buffer::StorageBuffer,
         instances: Vec<T>,
     ) -> Self 
@@ -27,7 +25,6 @@ impl InstancedModel {
 
         Self {
             meshes,
-            // materials,
             material_buffer,
             instance_buffer,
             instance_count: instances.len() as u32,
@@ -54,11 +51,10 @@ impl InstancedModel {
         path: &str,
         instances: Vec<T>,
     ) -> anyhow::Result<Self> 
-    where T : InstanceData + bytemuck::Pod + bytemuck::Zeroable
+        where T : InstanceData + bytemuck::Pod + bytemuck::Zeroable
     {
-
         let model = super::model::load_model(device, queue, path).expect("Failed to load model");
-
+        
         Ok(Self::new(
             device, 
             model.meshes, 

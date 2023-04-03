@@ -1,11 +1,10 @@
 
-use super::{mesh::Mesh, material::{TemplateMaterial}, vertex::ModelVertex};
-use crate::engine::{builders::{texture_builder::{create_sampler, TextureBuilder, TextureType}, self, pipeline_bind_group_layout_builder::{BindGroupLayoutBuilder, LayoutEntryType, EntryVisibility}}, buffers::storage_buffer::StorageBuffer};
+use super::{mesh::Mesh, material::{UnTexturedMaterial, TexturedMaterial}, vertex::ModelVertex};
+use crate::engine::buffers::storage_buffer::StorageBuffer;
 use crate::engine::buffers;
 
 pub struct Model {
     pub meshes : Vec<Mesh>,
-    // pub materials : &'a Vec<TemplateMaterial>,
     pub material_buffer : StorageBuffer,
 }
 
@@ -20,10 +19,16 @@ pub fn load_model(
         &tobj::LoadOptions { triangulate: true, single_index: true, ..Default::default()}
     ).expect("Failed to OBJ load file");
 
-    let mut obj_materials : Vec<TemplateMaterial> = Vec::new();
+    let mut obj_untextured_materials : Vec<UnTexturedMaterial> = Vec::new();
+    let mut obj_textured_materials : Vec<TexturedMaterial> = Vec::new();
     for m in materials? {
-        let material = parse_material(m, device, queue).expect("Failed to parse material");
-        obj_materials.push(material); 
+        if m.diffuse_texture != "" {
+            let material = parse_textured_material(m, device, queue).expect("Failed to parse material");
+            obj_textured_materials.push(material); 
+        } else {
+            let material = parse_untextured_material(m).expect("Failed to parse material");
+            obj_untextured_materials.push(material); 
+        }
     }
 
     let meshes = models
@@ -66,18 +71,17 @@ pub fn load_model(
         .collect::<Vec<_>>();
 
         let mut data = Vec::new();
-        for material in obj_materials {
+        for material in obj_untextured_materials {
             data.push(material.ambient);
             data.push(material.diffuse);
             data.push(material.specular);
-            data.push([material.shininess, material.dissolve, material.optical_density, 0.0]);
+            data.push([material.shininess, 0.0, 0.0, 0.0]);
         }
         let size = (std::mem::size_of::<[f32; 4]>() * data.len()) as wgpu::BufferAddress;
         let buffer = StorageBuffer::new(device, &data, size);
 
     Ok(Model { 
         meshes, 
-        // materials: &obj_materials, 
         material_buffer: buffer
     })
 }
@@ -145,81 +149,87 @@ pub fn parse_vertex(index : usize, mesh : &tobj::Mesh) -> ModelVertex {
     }
 }
 
-pub fn parse_material(
+pub fn parse_untextured_material(
     mat : tobj::Material, 
-    device : &wgpu::Device, 
-    queue: &wgpu::Queue
-) -> anyhow::Result<TemplateMaterial> {
+) -> anyhow::Result<UnTexturedMaterial> {
 
-    let ambient = [mat.ambient[0], mat.ambient[1], mat.ambient[2], 1.0];
-    let diffuse = [mat.diffuse[0], mat.diffuse[1], mat.diffuse[2], 1.0];
-    let specular = [mat.specular[0], mat.specular[1], mat.specular[2], 1.0];
-
-    let mut texture_view = None; 
-    if mat.diffuse_texture != "" {
-        texture_view = Some(TextureBuilder::new(&mat.diffuse_texture, TextureType::Texture2D)
-            .set_dimensions(2)
-            .set_format(wgpu::TextureFormat::Rgba8UnormSrgb)
-            .set_usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
-            .build(device, queue));
-    }
-
-    let mut normal_texture_view = None; 
-    if mat.normal_texture != "" { 
-        normal_texture_view = Some(TextureBuilder::new(&mat.normal_texture, TextureType::Texture2D)
-        .set_dimensions(2)
-        .set_format(wgpu::TextureFormat::Rgba8UnormSrgb)
-        .set_usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
-        .build(device, queue));
-    }
-    let sampler = create_sampler(&device);
-
-    let mut layout_builder = BindGroupLayoutBuilder::new(); 
-    let mut bind_group_builder = builders::pipeline_bind_group_builder::BindGroupBuilder::new(); 
-    if let Some(diffuse_texture) = texture_view.as_ref() {
-        layout_builder
-            .add_entry(LayoutEntryType::Texture, EntryVisibility::Fragment, 0)
-            .add_entry(LayoutEntryType::Sampler, EntryVisibility::Fragment, 0);
-
-        bind_group_builder.add_texture_entry(diffuse_texture);
-        bind_group_builder.add_sampler_entry(&sampler);
-    }
-    if let Some(normal_texture) = normal_texture_view.as_ref() {
-        layout_builder
-            .add_entry(LayoutEntryType::Texture, EntryVisibility::Fragment, 0)
-            .add_entry(LayoutEntryType::Sampler, EntryVisibility::Fragment, 0);
-
-        bind_group_builder.add_texture_entry(normal_texture);
-        bind_group_builder.add_sampler_entry(&sampler);
-    }
-    let data = vec![
-        ambient,
-        diffuse,
-        specular,
-        [mat.shininess, mat.dissolve, mat.optical_density, 0.0],
-    ];
-    let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * data.len() as wgpu::BufferAddress;
-    let mat_buffer = buffers::create_buffer(device, buffers::BufferType::Storage, &data); 
-    if ambient != [0.0, 0.0, 0.0, 1.0] {
-        layout_builder.add_entry(LayoutEntryType::StorageBuffer, EntryVisibility::Fragment, size);
-        bind_group_builder.add_storage_buffer_entry(&mat_buffer, size);
-    }
-
-    let layout = layout_builder.build(device);
-    let bind_group = bind_group_builder.build(device, &layout);
-
-    Ok(TemplateMaterial {
-        diffuse_texture: texture_view,
-        normal_texture: normal_texture_view,
-        bind_group,
-        bind_group_layout: layout,
-
-        ambient,  
-        diffuse,
-        specular,
+    Ok(UnTexturedMaterial {
+        ambient: [mat.ambient[0], mat.ambient[1], mat.ambient[2], 1.0],  
+        diffuse : [mat.diffuse[0], mat.diffuse[1], mat.diffuse[2], 1.0],
+        specular : [mat.specular[0], mat.specular[1], mat.specular[2], 1.0],
         shininess: mat.shininess,
-        dissolve: mat.dissolve,
-        optical_density: mat.optical_density,
-
     })
+}
+
+pub fn parse_textured_material(
+    mat : tobj::Material, 
+    device : &wgpu::Device,
+    queue : &wgpu::Queue,
+) -> anyhow::Result<TexturedMaterial> {
+
+    println!("Loading texture: {}...", mat.diffuse_texture);
+    println!("Device: {:?}", device);
+    println!("Queue: {:?}", queue);
+
+    todo!("Implement texture loading")
+
+    // let mut texture_view = None; 
+    // if mat.diffuse_texture != "" {
+    //     texture_view = Some(TextureBuilder::new(&mat.diffuse_texture, TextureType::Texture2D)
+    //         .set_dimensions(2)
+    //         .set_format(wgpu::TextureFormat::Rgba8UnormSrgb)
+    //         .set_usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
+    //         .build(device, queue));
+    // }
+
+    // let mut normal_texture_view = None; 
+    // if mat.normal_texture != "" { 
+    //     normal_texture_view = Some(TextureBuilder::new(&mat.normal_texture, TextureType::Texture2D)
+    //     .set_dimensions(2)
+    //     .set_format(wgpu::TextureFormat::Rgba8UnormSrgb)
+    //     .set_usage(wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST)
+    //     .build(device, queue));
+    // }
+    // let sampler = create_sampler(&device);
+
+    // let mut layout_builder = BindGroupLayoutBuilder::new(); 
+    // let mut bind_group_builder = builders::pipeline_bind_group_builder::BindGroupBuilder::new(); 
+    // if let Some(diffuse_texture) = texture_view.as_ref() {
+    //     layout_builder
+    //         .add_entry(LayoutEntryType::Texture, EntryVisibility::Fragment, 0)
+    //         .add_entry(LayoutEntryType::Sampler, EntryVisibility::Fragment, 0);
+
+    //     bind_group_builder.add_texture_entry(diffuse_texture);
+    //     bind_group_builder.add_sampler_entry(&sampler);
+    // }
+    // if let Some(normal_texture) = normal_texture_view.as_ref() {
+    //     layout_builder
+    //         .add_entry(LayoutEntryType::Texture, EntryVisibility::Fragment, 0)
+    //         .add_entry(LayoutEntryType::Sampler, EntryVisibility::Fragment, 0);
+
+    //     bind_group_builder.add_texture_entry(normal_texture);
+    //     bind_group_builder.add_sampler_entry(&sampler);
+    // }
+    // let data = vec![
+    //     ambient,
+    //     diffuse,
+    //     specular,
+    //     [mat.shininess, mat.dissolve, mat.optical_density, 0.0],
+    // ];
+    // let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * data.len() as wgpu::BufferAddress;
+    // let mat_buffer = buffers::create_buffer(device, buffers::BufferType::Storage, &data); 
+    // if ambient != [0.0, 0.0, 0.0, 1.0] {
+    //     layout_builder.add_entry(LayoutEntryType::StorageBuffer, EntryVisibility::Fragment, size);
+    //     bind_group_builder.add_storage_buffer_entry(&mat_buffer, size);
+    // }
+
+    // let layout = layout_builder.build(device);
+    // let bind_group = bind_group_builder.build(device, &layout);
+
+    // Ok(TexturedMaterial {
+        // diffuse_texture: texture_view,
+        // normal_texture: normal_texture_view,
+        // bind_group,
+        // bind_group_layout: layout,
+    // })
 }

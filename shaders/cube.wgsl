@@ -3,6 +3,7 @@ struct VertexOutput {
     @location(0) normal: vec3<f32>,
     @location(1) tex_coords: vec2<f32>,
     @location(2) original_position: vec3<f32>,
+    @location(3) instance_material_id: f32,
 };
 
 struct CameraData {
@@ -51,21 +52,20 @@ fn vs_main(
     @location(1) normal: vec4<f32>,
     @location(2) tex_coord: vec2<f32>,
     @location(3) instance_pos: vec4<f32>,
+    @location(4) instance_material_id: vec4<f32>,
 ) -> VertexOutput {
     var out: VertexOutput;
     out.normal = normal.xyz;
     out.tex_coords = tex_coord;
     out.position = camera_data.transform * (position + instance_pos);
     out.original_position = position.xyz + instance_pos.xyz;
+    out.instance_material_id = instance_material_id.x;
     return out;
 }
 
 fn calc_light(in: VertexOutput, light : Light) -> vec3<f32> {
 
-    var material_index : i32 = 0;
-    if in.original_position.y >= 0.0 {
-        material_index = 1;
-    }
+    var material_index : i32 = i32(in.instance_material_id);
 
     let ambient_strength = 0.3;
     let ambient : vec3<f32> = light.ambient * ambient_strength * cube_material[material_index].ambient;

@@ -18,15 +18,16 @@ fn main() {
     let mut camera = env::camera::Camera::new(window_size.0 as f32 / window_size.1 as f32);
     let mut light = LightData::new([300.0, 5.0, 300.0]);
 
-    let mut poss = Vec::<[f32; 4]>::new();
+    let mut poss = Vec::<[f32; 5]>::new();
     
     for i in 0..300 {
         for j in 0..300 {
             let height = (i as f32 * 0.2).sin() * 3.0 * (j as f32 * 0.1).cos() * 3.0;
-            poss.push([2.0 * i as f32, height, 2.0* j as f32, 1.0]);
+            let mat_id : f32 = (i % 3) as f32;
+            poss.push([2.0 * i as f32, height, 2.0* j as f32, 1.0, mat_id]);
         }
     }
-    let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: x }).collect();
+    let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: [x[0], x[1], x[2], x[3]], material_index: [x[4], 0.0, 0.0, 0.0] }).collect();
     let mut model = instanced_model::InstancedModel::load_model(
         &engine.get_device(), 
         &engine.get_queue(),
@@ -96,15 +97,16 @@ fn main() {
                 camera.update(delta_time, &engine);
                 engine.update();
 
-                let mut poss = Vec::<[f32; 4]>::new();
+                let mut poss = Vec::<[f32; 5]>::new();
     
                 for i in 0..300 {
                     for j in 0..300 {
                         let height = (i as f32 * 0.2 + engine.clock.get_time()).sin() * 3.0 * (j as f32 * 0.1 + engine.clock.get_time() * 0.5).cos() * 3.0;
-                        poss.push([2.0 * i as f32, height, 2.0* j as f32, 1.0]);
+                        let material_id = (i % 3) as f32;
+                        poss.push([2.0 * i as f32, height, 2.0* j as f32, 1.0, material_id]);
                     }
                 }
-                let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: x }).collect();            
+                let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: [x[0], x[1], x[2], x[3]], material_index: [x[4], 0.0, 0.0, 0.0] }).collect();
                 model.update_instances(&engine.get_device(), &instances); 
                 let entity_data = EntityData::new(vec![light], vec![&model], vec![]);
 

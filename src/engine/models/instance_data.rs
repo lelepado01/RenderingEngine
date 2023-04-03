@@ -9,6 +9,7 @@ pub trait InstanceData {
 #[derive(Clone, Copy, Pod, Zeroable, Debug)]
 pub struct PositionInstanceData {
     pub position: [f32; 4],
+    pub material_index: [f32; 4],
 }
 
 impl InstanceData for PositionInstanceData {
@@ -20,6 +21,11 @@ impl InstanceData for PositionInstanceData {
                 wgpu::VertexAttribute {
                     offset: 0,
                     shader_location: 3,
+                    format: wgpu::VertexFormat::Float32x4,
+                },
+                wgpu::VertexAttribute {
+                    offset: 16,
+                    shader_location: 4,
                     format: wgpu::VertexFormat::Float32x4,
                 },
             ]

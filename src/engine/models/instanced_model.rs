@@ -1,10 +1,10 @@
-use crate::engine::buffers;
+use crate::engine::buffers::{self, storage_buffer};
 use super::{mesh::Mesh, instance_data::InstanceData};
 
 pub struct InstancedModel {
     pub meshes: Vec<Mesh>,
     // pub materials: Vec<TemplateMaterial>,
-    pub material_buffer: buffers::storage_buffer::StorageBuffer,
+    pub material_buffer: storage_buffer::StorageBuffer,
     pub instance_buffer: wgpu::Buffer,
     pub instance_count: u32,
 }
@@ -14,7 +14,7 @@ impl InstancedModel {
         device: &wgpu::Device,
         meshes: Vec<Mesh>,
         // materials: Vec<TemplateMaterial>,
-        material_buffer: buffers::storage_buffer::StorageBuffer,
+        material_buffer: storage_buffer::StorageBuffer,
         instances: Vec<T>,
     ) -> Self 
         where T : InstanceData + bytemuck::Pod + bytemuck::Zeroable 

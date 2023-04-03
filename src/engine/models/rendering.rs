@@ -1,7 +1,7 @@
 
 use crate::engine::buffers::storage_buffer;
 
-use super::{mesh::Mesh, material, model::Model, instanced_model::InstancedModel};
+use super::{mesh::Mesh, model::Model, instanced_model::InstancedModel};
 
 pub trait DrawModel<'a> {
     fn draw_mesh(&mut self, 

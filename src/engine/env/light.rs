@@ -40,11 +40,10 @@ pub trait Bufferable {
 
 impl Bufferable for Vec<LightData> {
     fn as_storage_buffer(&self, device : &wgpu::Device) -> StorageBuffer {
-        let mut storage = StorageBuffer::new(&device, &self[0].as_vec(), self[0].size() as u64);
-        for i in 1..self.len() {
-            storage.add_binding(device, &self[i].as_vec(), self[i].size() as u64);
-        }
 
-        storage
+        let data = self.iter().map(|light| light.as_vec()).flatten().collect::<Vec<[f32; 4]>>();
+        let size = self.len() as u64 * self[0].size();
+
+        StorageBuffer::new(&device, &data, size)
     }
 }

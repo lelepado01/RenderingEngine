@@ -28,6 +28,7 @@ impl StorageBuffer {
         }
     }
 
+    #[allow(dead_code)]
     pub fn add_binding<T>(&mut self, device: &wgpu::Device, data: &Vec<T>, size : u64) 
     where T: bytemuck::Pod + bytemuck::Zeroable,
     {

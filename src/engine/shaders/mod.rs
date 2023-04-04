@@ -9,18 +9,22 @@ fn file_to_string(path : &str) -> String {
     contents
 }
 
-pub fn compile_shader(
-    path : &str, 
-) -> String {
+pub fn compile_shader(path : &str) -> String {
 
-    let original_dir = path.split("/").collect::<Vec<&str>>()[0..path.split("/").collect::<Vec<&str>>().len() - 1].join("/");
-    let contents = file_to_string(path);
+    let path_dirs = path.split("/").collect::<Vec<&str>>();
+    let original_dir = path_dirs[0..path_dirs.len() - 1].join("/");
+
     let mut final_shader_code = String::new();
-
-    for line in contents.lines() {
+    
+    for line in file_to_string(path).lines() {
         if line.contains("#include") {
             
-            let include_path = original_dir.clone() + "/" + &line.split(" ").collect::<Vec<&str>>()[1][1..line.split(" ").collect::<Vec<&str>>()[1].len() - 2];
+            let file_name = line
+                .split(" ").collect::<Vec<&str>>()[1]
+                .replace("\"", "")
+                .replace(";", ""); 
+
+            let include_path = original_dir.clone() + "/" + &file_name.to_owned();
             let include_contents = compile_shader(include_path.as_str());
             final_shader_code.push_str(&include_contents);
 
@@ -29,6 +33,5 @@ pub fn compile_shader(
         }
     }
 
-    // final_shader_code.push_str(&contents);
     final_shader_code
 }

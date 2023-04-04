@@ -1,32 +1,12 @@
-struct VertexOutput {
-    @builtin(position) position: vec4<f32>,
-    @location(0) normal: vec3<f32>,
-    @location(1) tex_coords: vec2<f32>,
-    @location(2) original_position: vec3<f32>,
-    @location(3) instance_material_id: f32,
-};
+
+#include "light_data.wgsl"; 
+#include "materials.wgsl";
+#include "utils.wgsl";
 
 struct CameraData {
     transform: mat4x4<f32>,
     position: vec3<f32>,
 };
-
-struct Light{
-    position : vec3<f32>,
-
-    ambient : vec3<f32>,
-    diffuse : vec3<f32>,
-    specular : vec3<f32>,
-}
-
-struct TemplateMaterial {
-    ambient: vec3<f32>,
-    diffuse: vec3<f32>,
-    specular: vec3<f32>,
-    shininess: f32,
-    dissolve: f32,
-    optical_density: f32,
-}
 
 @group(0) @binding(0)
 var<uniform> camera_data: CameraData;
@@ -35,7 +15,7 @@ var<uniform> camera_data: CameraData;
 var<storage, read_write> light_data: array<Light>;
 
 @group(2) @binding(0)
-var<storage, read_write> cube_material : array<TemplateMaterial>;
+var<storage, read_write> cube_material : array<UnTexturedMaterial>;
 
 // @group(2) @binding(0)
 // var t_diffuse: texture_2d<f32>;
@@ -48,18 +28,15 @@ var<storage, read_write> cube_material : array<TemplateMaterial>;
 
 @vertex
 fn vs_main(
-    @location(0) position: vec4<f32>,
-    @location(1) normal: vec4<f32>,
-    @location(2) tex_coord: vec2<f32>,
-    @location(3) instance_pos: vec4<f32>,
-    @location(4) instance_material_id: vec4<f32>,
+    vertex_input: VertexInput,
+    instance_input: InstanceInput,
 ) -> VertexOutput {
     var out: VertexOutput;
-    out.normal = normal.xyz;
-    out.tex_coords = tex_coord;
-    out.position = camera_data.transform * (position + instance_pos);
-    out.original_position = position.xyz + instance_pos.xyz;
-    out.instance_material_id = instance_material_id.x;
+    out.normal = vertex_input.normal.xyz;
+    out.tex_coords = vertex_input.tex_coords;
+    out.position = camera_data.transform * (vertex_input.v_position + instance_input.i_position);
+    out.original_position = vertex_input.v_position.xyz + instance_input.i_position.xyz;
+    out.instance_material_id = instance_input.material_id;
     return out;
 }
 

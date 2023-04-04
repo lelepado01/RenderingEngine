@@ -1,4 +1,4 @@
-use crate::engine::models::vertex::VertexType;
+use crate::engine::{models::vertex::VertexType, shaders};
 
 
 pub struct PipelineBuilder<'a> {
@@ -34,7 +34,8 @@ impl<'a> PipelineBuilder<'a> {
 
     pub fn set_vertex_shader(mut self, device : &wgpu::Device, shader_path : &str, vertex_type : VertexType) -> Self {
         self.vertex_type = vertex_type;
-        let shader_source = std::fs::read_to_string(shader_path).expect("Failed to read shader file");
+        let shader_source = shaders::compile_shader(shader_path); 
+        
         self.vertex_code = Some(device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: None,
             source: wgpu::ShaderSource::Wgsl(shader_source.into()),
@@ -43,7 +44,8 @@ impl<'a> PipelineBuilder<'a> {
     }
 
     pub fn set_fragment_shader(mut self, device : &wgpu::Device, shader_path : &str, configs : &wgpu::TextureFormat) -> Self {
-        let shader_source = std::fs::read_to_string(shader_path).expect("Failed to read shader file");
+        let shader_source = shaders::compile_shader(shader_path);
+        // std::fs::read_to_string(shader_path).expect("Failed to read shader file");
         let shader_mod_desc = wgpu::ShaderModuleDescriptor {
             label: None,
             source: wgpu::ShaderSource::Wgsl(shader_source.into()),

@@ -7,6 +7,7 @@ pub mod surface_engine;
 pub mod builders;
 pub mod buffers;
 pub mod models;
+pub mod shaders;
 pub mod entity_data;
 
 pub mod mesh_engine; 

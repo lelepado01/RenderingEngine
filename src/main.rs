@@ -131,6 +131,7 @@ fn main() {
                     .build(||{
                         ui.text(format!("FPS: {}", engine.clock.fps()));
                         ui.text(format!("Frame time: {} ms", engine.clock.frame_duration().as_millis()));
+                        ui.text(format!("Draw Calls: {}", mesh_engine.frames_draw_calls));
 
                         if ui.button("Quit") {
                             *control_flow = ControlFlow::Exit;

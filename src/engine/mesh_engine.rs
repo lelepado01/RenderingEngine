@@ -13,6 +13,8 @@ pub struct MeshEngine {
     uniform_buffers: Vec<UniformBuffer>,
     storage_buffers: Vec<StorageBuffer>,
     pipelines: Vec<wgpu::RenderPipeline>,
+
+    pub frames_draw_calls : usize,
 }
 
 impl MeshEngine {
@@ -67,6 +69,7 @@ impl MeshEngine {
             pipelines: vec![instanced_pipeline, normal_pipeline],
             uniform_buffers: vec![camera_uniform],
             storage_buffers: vec![light_data],
+            frames_draw_calls : 0,
         }
     }
 
@@ -76,6 +79,7 @@ impl MeshEngine {
     }
 
     pub fn render(&mut self, view: &wgpu::TextureView, depth_texture_view : &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, entity_data : &entity_data::EntityData,) {
+        self.frames_draw_calls = entity_data.instanced_models.len() + entity_data.models.len();
 
         {
             let mut rpass = builders::pipeline_builder::create_render_pass(view, depth_texture_view, encoder);

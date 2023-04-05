@@ -1,4 +1,4 @@
-use engine::{utils, env::{self, light::LightData}, models::{instance_data::PositionInstanceData, instanced_model}};
+use engine::{utils, env::{self, light::LightData}, models::{instance_data::PositionInstanceData, instanced_model, model}};
 use imgui::*;
 use winit::{
     event::{ElementState, Event, KeyboardInput, WindowEvent},
@@ -36,7 +36,13 @@ fn main() {
         instances,
     ).expect("Failed to create OBJ model"); 
 
-    let entity_data = EntityData::new(vec![light, light2], vec![&model], vec![]);
+    let fish = model::load_model(
+        &engine.get_device(), 
+        &engine.get_queue(),
+        "assets/seahorse.obj", 
+    ).expect("Failed to create OBJ model");
+
+    let entity_data = EntityData::new(vec![light, light2], vec![&model], vec![&fish]);
 
     let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &camera, &entity_data);
 
@@ -109,7 +115,7 @@ fn main() {
                 }
                 let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: [x[0], x[1], x[2], x[3]], material_index: [x[4], 0.0, 0.0, 0.0] }).collect();
                 model.update_instances(&engine.get_device(), &instances); 
-                let entity_data = EntityData::new(vec![light, light2], vec![&model], vec![]);
+                let entity_data = EntityData::new(vec![light, light2], vec![&model], vec![&fish]);
 
                 mesh_engine.update(&engine.get_device(), &camera, &entity_data); 
 

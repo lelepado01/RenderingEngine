@@ -17,33 +17,21 @@ var<storage, read_write> light_data: array<Light>;
 @group(2) @binding(0)
 var<storage, read_write> cube_material : array<UnTexturedMaterial>;
 
-
-// @group(2) @binding(0)
-// var t_diffuse: texture_2d<f32>;
-// @group(2)@binding(1)
-// var s_diffuse: sampler;
-// @group(2)@binding(2)
-// var t_normal: texture_2d<f32>;
-// @group(2) @binding(3)
-// var s_normal: sampler;
-
 @vertex
 fn vs_main(
     vertex_input: VertexInput,
-    instance_input: InstanceInput,
 ) -> VertexOutput {
     var out: VertexOutput;
     out.normal = vertex_input.normal.xyz;
     out.tex_coords = vertex_input.tex_coords;
-    out.position = camera_data.transform * (vertex_input.v_position + instance_input.i_position);
-    out.original_position = vertex_input.v_position.xyz + instance_input.i_position.xyz;
-    out.instance_material_id = instance_input.material_id;
+    out.position = camera_data.transform * vertex_input.v_position;
+    out.original_position = vertex_input.v_position.xyz;
     return out;
 }
 
 fn calc_light(in: VertexOutput, light : Light) -> vec3<f32> {
 
-    var material_index : i32 = i32(in.instance_material_id);
+    var material_index : i32 = 0;
 
     let ambient_strength = 0.2;
     let ambient : vec3<f32> = light.ambient * ambient_strength * cube_material[material_index].ambient;

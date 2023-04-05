@@ -21,7 +21,8 @@ pub fn load_model(
 
     let mut obj_untextured_materials : Vec<UnTexturedMaterial> = Vec::new();
     let mut obj_textured_materials : Vec<TexturedMaterial> = Vec::new();
-    for m in materials? {
+
+    for m in materials.expect("Failed to load materials") {
         if m.diffuse_texture != "" {
             let material = parse_textured_material(m, device, queue).expect("Failed to parse material");
             obj_textured_materials.push(material); 
@@ -130,6 +131,22 @@ pub fn parse_vertex(index : usize, mesh : &tobj::Mesh) -> ModelVertex {
             _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1]],
             _normal: [0.0, 0.0, 0.0, 1.0],
         }
+    } else if mesh.texcoords.len() == 0 {
+        return ModelVertex {
+            _pos: [
+                mesh.positions[index * 3],
+                mesh.positions[index * 3 + 1],
+                mesh.positions[index * 3 + 2],
+                1.0,
+            ],
+            _tex_coord: [0.0, 0.0],
+            _normal: [
+                mesh.normals[index * 3],
+                mesh.normals[index * 3 + 1],
+                mesh.normals[index * 3 + 2],
+                1.0,
+            ],
+        };
     } else {
         return ModelVertex {
             _pos: [

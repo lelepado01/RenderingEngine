@@ -52,6 +52,9 @@ impl MeshEngine {
             .add_bind_group_layout(&light_data.bind_group_layout);
 
         for model in &entity_data.models {
+            if model.uniform_buffer.is_some() {
+                pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.uniform_buffer.as_ref().unwrap().bind_group_layout);
+            }
             pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.material_buffer.bind_group_layout);
         }
         let normal_pipeline_layout = pipeline_layout_builder.build(device);
@@ -78,14 +81,14 @@ impl MeshEngine {
         self.storage_buffers[0] = entity_data.lights.as_storage_buffer(device);
     }
 
-    pub fn render(&mut self, view: &wgpu::TextureView, depth_texture_view : &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, entity_data : &entity_data::EntityData,) {
+    pub fn render(&mut self, view: &wgpu::TextureView, depth_texture_view : &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, entity_data : &entity_data::EntityData) {
         self.frames_draw_calls = entity_data.instanced_models.len() + entity_data.models.len();
 
         {
             let mut rpass = builders::pipeline_builder::create_render_pass(view, depth_texture_view, encoder);
 
-            rpass.set_pipeline(&self.pipelines[0]);
             let mut bind_index_offset = 0;
+            rpass.set_pipeline(&self.pipelines[0]);
             for i in 0..self.uniform_buffers.len() {
                 rpass.set_uniform_buffer(i as u32, &self.uniform_buffers[i]);
             }
@@ -97,9 +100,9 @@ impl MeshEngine {
             for i in 0..entity_data.instanced_models.len() {
                 rpass.draw_model_instanced((bind_index_offset + i) as u32, &entity_data.instanced_models[i]);
             }
-
-            rpass.set_pipeline(&self.pipelines[1]);
+            
             bind_index_offset = 0;
+            rpass.set_pipeline(&self.pipelines[1]);
             for i in 0..self.uniform_buffers.len() {
                 rpass.set_uniform_buffer(i as u32, &self.uniform_buffers[i]);
             }
@@ -108,6 +111,8 @@ impl MeshEngine {
                 rpass.set_storage_buffer((bind_index_offset + i) as u32, &self.storage_buffers[i]);
             }
             bind_index_offset += self.storage_buffers.len();
+            rpass.set_uniform_buffer(bind_index_offset as u32, entity_data.models[0].uniform_buffer.as_ref().unwrap()); 
+            bind_index_offset += 1;
             for i in 0..entity_data.models.len() {
                 rpass.draw_model((bind_index_offset + i) as u32, &entity_data.models[i]);
             }

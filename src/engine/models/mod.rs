@@ -6,3 +6,4 @@ pub mod instance_data;
 pub mod instanced_model;
 pub mod material;
 pub mod rendering;
+pub mod loading;

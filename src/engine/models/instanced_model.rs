@@ -53,7 +53,7 @@ impl InstancedModel {
     ) -> anyhow::Result<Self> 
         where T : InstanceData + bytemuck::Pod + bytemuck::Zeroable
     {
-        let model = super::model::load_model(device, queue, path).expect("Failed to load model");
+        let model = super::loading::load_model(device, queue, path).expect("Failed to load model");
         
         Ok(Self::new(
             device, 

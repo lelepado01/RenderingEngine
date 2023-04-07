@@ -1,7 +1,7 @@
 use crate::engine::builders::pipeline_layout_builder::PipelineLayoutBuilder;
 use crate::engine::buffers::{uniform_buffer::{UniformBuffer, SetUniformBuffer}, storage_buffer::{StorageBuffer, SetStorageBuffer}};
+use super::camera::third_person_camera::ThirdPersonCamera;
 use super::entity_data;
-use super::env::camera::Camera;
 use super::env::light::Bufferable;
 use super::models::instance_data::{PositionInstanceData, InstanceData};
 use super::models::vertex::{ModelVertex, VertexType, VertexData};
@@ -21,7 +21,7 @@ impl MeshEngine {
     pub fn init(
         device: &wgpu::Device,
         config: &wgpu::SurfaceConfiguration,
-        camera: &Camera,
+        camera: &ThirdPersonCamera,
         entity_data : &entity_data::EntityData,
     ) -> Self {
 
@@ -76,7 +76,7 @@ impl MeshEngine {
         }
     }
 
-    pub fn update(&mut self, device: &wgpu::Device, camera: &Camera, entity_data : &entity_data::EntityData) {
+    pub fn update(&mut self, device: &wgpu::Device, camera: &ThirdPersonCamera, entity_data : &entity_data::EntityData) {
         self.uniform_buffers[0] = camera.as_uniform_buffer(device);
         self.storage_buffers[0] = entity_data.lights.as_storage_buffer(device);
     }

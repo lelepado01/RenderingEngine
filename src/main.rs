@@ -87,7 +87,7 @@ fn main() {
                 ..
             } => {
                 engine.update_key_state(keycode, false); 
-                player.camera.reset_momentum();
+                player.reset_momentum();
             }
             | Event::WindowEvent {
                 event: WindowEvent::CloseRequested,

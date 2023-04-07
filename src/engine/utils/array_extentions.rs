@@ -1,3 +1,5 @@
+use cgmath::Vector3;
+
 
 
 pub trait ToArray4 {
@@ -16,4 +18,17 @@ impl ToArray4 for [f32; 3] {
         }
         result
     }
+}
+
+impl ToArray4 for Vector3<f32> {
+    type Output = [f32; 4];
+
+    fn to_arr4(self) -> Self::Output {
+        let mut result = [0.0; 4];
+        for i in 0..3 {
+            result[i] = self[i];
+        }
+        result
+    }
+    
 }

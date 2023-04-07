@@ -3,9 +3,12 @@ use std::f32::consts::PI;
 use cgmath::{Vector3, InnerSpace};
 use winit::event::VirtualKeyCode;
 
-use crate::engine::{engine::EngineData, buffers::uniform_buffer::UniformBuffer};
+use crate::engine::{engine::EngineData, buffers::uniform_buffer::UniformBuffer, utils::vector_extensions::ToPoint3};
 
-pub struct Camera {
+use super::{OPENGL_TO_WGPU_MATRIX};
+
+#[allow(dead_code)]
+pub struct FpsCamera {
     pub position : Vector3<f32>,
     pub forward : Vector3<f32>,
     momentum : Vector3<f32>,
@@ -16,16 +19,9 @@ pub struct Camera {
     pitch : f32,
 }
 
-#[rustfmt::skip]
-pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.0, 0.0, 0.5, 1.0,
-);
 
-
-impl Camera {
+#[allow(dead_code)]
+impl FpsCamera {
 
     pub fn new(aspect_ratio : f32) -> Self {
         Self {
@@ -101,10 +97,10 @@ impl Camera {
         }
     }
 
-    pub fn get_view_projection_matrix(&self) -> Vec<[f32; 4]> {
+    fn get_view_projection_matrix(&self) -> Vec<[f32; 4]> {
         let view_matrix = cgmath::Matrix4::look_at_rh(
-            vector3_to_point3(self.position),
-            vector3_to_point3(self.position + self.forward),
+            self.position.to_point3(),
+            (self.position + self.forward).to_point3(),
             Vector3::unit_y(),
         );
 
@@ -132,8 +128,4 @@ impl Camera {
         UniformBuffer::new(&device, &camera_data, buffer_size as u64)
     }
 
-}
-
-fn vector3_to_point3(v : Vector3<f32>) -> cgmath::Point3<f32> {
-    cgmath::Point3::new(v.x, v.y, v.z)
 }

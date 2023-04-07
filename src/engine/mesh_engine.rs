@@ -1,6 +1,6 @@
 use crate::engine::builders::pipeline_layout_builder::PipelineLayoutBuilder;
 use crate::engine::buffers::{uniform_buffer::{UniformBuffer, SetUniformBuffer}, storage_buffer::{StorageBuffer, SetStorageBuffer}};
-use super::camera::third_person_camera::ThirdPersonCamera;
+use super::camera::Camera;
 use super::entity_data;
 use super::env::light::Bufferable;
 use super::models::instance_data::{PositionInstanceData, InstanceData};
@@ -18,13 +18,14 @@ pub struct MeshEngine {
 }
 
 impl MeshEngine {
-    pub fn init(
+    pub fn init<T>(
         device: &wgpu::Device,
         config: &wgpu::SurfaceConfiguration,
-        camera: &ThirdPersonCamera,
+        camera: &T,
         entity_data : &entity_data::EntityData,
-    ) -> Self {
-
+    ) -> Self 
+        where T : Camera
+    {
         let camera_uniform = camera.as_uniform_buffer(device);
         let light_data = entity_data.lights.as_storage_buffer(device);
 
@@ -76,7 +77,14 @@ impl MeshEngine {
         }
     }
 
-    pub fn update(&mut self, device: &wgpu::Device, camera: &ThirdPersonCamera, entity_data : &entity_data::EntityData) {
+    pub fn update<T>(
+        &mut self, 
+        device: &wgpu::Device, 
+        camera: &T, 
+        entity_data : &entity_data::EntityData
+    ) 
+        where T : Camera
+    {
         self.uniform_buffers[0] = camera.as_uniform_buffer(device);
         self.storage_buffers[0] = entity_data.lights.as_storage_buffer(device);
     }

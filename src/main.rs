@@ -136,18 +136,6 @@ fn main() {
                         ui.input_float3("Camera position", &mut camera_position).build();
                         let mut camera_rotation : [f32; 3] = player.camera.forward.into();
                         ui.input_float3("Camera rotation", &mut camera_rotation).build();  
-
-                        let mut light_position : [f32; 3] = light.position; 
-                        ui.slider("Light position x", 0.0, 500.0, &mut light_position[0]); 
-                        ui.slider("Light position y", 0.0, 20.0, &mut light_position[1]);
-                        ui.slider("Light position z", 0.0, 500.0, &mut light_position[2]);
-                        light.position = light_position; 
-
-                        let mut light2_position : [f32; 3] = light2.position;
-                        ui.slider("Light2 position x", 0.0, 500.0, &mut light2_position[0]);
-                        ui.slider("Light2 position y", 0.0, 20.0, &mut light2_position[1]);
-                        ui.slider("Light2 position z", 0.0, 500.0, &mut light2_position[2]);
-                        light2.position = light2_position;
                     }
                 );                 
                 

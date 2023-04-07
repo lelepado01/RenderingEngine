@@ -1,9 +1,8 @@
-use std::f32::consts::PI;
-
+use std::f32::consts::PI; 
 use cgmath::{Vector3, InnerSpace};
+use crate::engine::{engine::EngineData, buffers::uniform_buffer::UniformBuffer, utils::vector_extensions::ToPoint3};
 
-use crate::engine::{engine::EngineData, buffers::uniform_buffer::UniformBuffer};
-
+use super::{OPENGL_TO_WGPU_MATRIX, Camera};
 
 pub struct ThirdPersonCamera {
     pub position : Vector3<f32>,
@@ -16,14 +15,6 @@ pub struct ThirdPersonCamera {
 
 const DISTANCE_PLAYER_CAMERA : f32 = 15.0; 
 const SENSITIVITY:f32 = 0.1; 
-
-#[rustfmt::skip]
-pub const OPENGL_TO_WGPU_MATRIX: cgmath::Matrix4<f32> = cgmath::Matrix4::new(
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.0,
-    0.0, 0.0, 0.5, 1.0,
-);
 
 
 impl ThirdPersonCamera {
@@ -57,11 +48,13 @@ impl ThirdPersonCamera {
         self.yaw += x*SENSITIVITY;
         self.pitch += -y*SENSITIVITY;
     }
+}
 
-    pub fn get_view_projection_matrix(&self) -> Vec<[f32; 4]> {
+impl Camera for ThirdPersonCamera {
+    fn get_view_projection_matrix(&self) -> Vec<[f32; 4]> {
         let view_matrix = cgmath::Matrix4::look_at_rh(
-            vector3_to_point3(self.position),
-            vector3_to_point3(self.position + self.forward),
+            self.position.to_point3(),
+            (self.position + self.forward).to_point3(),
             Vector3::unit_y(),
         );
 
@@ -77,20 +70,11 @@ impl ThirdPersonCamera {
         return mx_ref.to_vec();
     }
 
-    pub fn get_camera_data(&self) -> Vec<[f32; 4]> {
-        let mut data = self.get_view_projection_matrix();
-        data.push([self.position.x, self.position.y, self.position.z, 0.0]);
-        return data;
-    }
-
-    pub fn as_uniform_buffer(&self, device : &wgpu::Device) -> UniformBuffer {
-        let camera_data = self.get_camera_data();
+    fn as_uniform_buffer(&self, device : &wgpu::Device) -> UniformBuffer {
+        let mut camera_data = self.get_view_projection_matrix();
+        camera_data.push([self.position.x, self.position.y, self.position.z, 0.0]);
+        
         let buffer_size = std::mem::size_of::<[f32; 4]>() * camera_data.len();
         UniformBuffer::new(&device, &camera_data, buffer_size as u64)
     }
-
-}
-
-fn vector3_to_point3(v : Vector3<f32>) -> cgmath::Point3<f32> {
-    cgmath::Point3::new(v.x, v.y, v.z)
 }

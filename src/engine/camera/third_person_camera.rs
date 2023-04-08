@@ -19,9 +19,9 @@ const SENSITIVITY:f32 = 0.1;
 
 impl ThirdPersonCamera {
 
-    pub fn new(aspect_ratio : f32) -> Self {
+    pub fn new(start_pos : [f32; 3], aspect_ratio : f32) -> Self {
         Self {
-            position : Vector3::new(0.0, 10.0, 0.0),
+            position : Vector3::from(start_pos),
             forward : Vector3::new(0.0, 0.0, -1.0),
 
             yaw : 0.0,
@@ -45,8 +45,8 @@ impl ThirdPersonCamera {
     }
 
     pub fn update_rotation(&mut self, x : f32, y : f32) {
-        self.yaw += x*SENSITIVITY;
-        self.pitch += -y*SENSITIVITY;
+        self.yaw += x * SENSITIVITY;
+        self.pitch -= y * SENSITIVITY;
     }
 }
 

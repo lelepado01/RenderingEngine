@@ -23,9 +23,9 @@ pub struct FpsCamera {
 #[allow(dead_code)]
 impl FpsCamera {
 
-    pub fn new(aspect_ratio : f32) -> Self {
+    pub fn new(start_pos : [f32; 3], aspect_ratio : f32) -> Self {
         Self {
-            position : Vector3::new(0.0, 0.0, 0.0),
+            position : Vector3::from(start_pos),
             forward : Vector3::new(0.0, 0.0, -1.0),
             momentum : Vector3::new(0.0, 0.0, 0.0),
             speed : 20.0,

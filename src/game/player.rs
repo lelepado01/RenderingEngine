@@ -1,4 +1,4 @@
-use cgmath::{Vector3, InnerSpace};
+use cgmath::{Vector3, InnerSpace, SquareMatrix, Rad};
 use winit::event::VirtualKeyCode;
 
 use crate::engine::{models::{model, loading}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, utils::array_extentions::ToArray4, camera::third_person_camera::ThirdPersonCamera};
@@ -9,9 +9,19 @@ pub struct Player {
 
     pub position : Vector3<f32>,
     momentum : Vector3<f32>, 
+
+    rotation_angle : Rad<f32>,
+    old_momentum : Vector3<f32>,
 }
 
 const SPEED : f32 = 10.0; 
+
+const IDENTITY_MATRIX : [[f32; 4]; 4] = [
+    [1.0, 0.0, 0.0, 0.0],
+    [0.0, 1.0, 0.0, 0.0],
+    [0.0, 0.0, 1.0, 0.0],
+    [0.0, 0.0, 0.0, 1.0],
+];
 
 impl Player {
     pub fn new(engine : &EngineData) -> Self {
@@ -22,12 +32,12 @@ impl Player {
         ).expect("Failed to create OBJ model");
 
         let window_size = engine.get_window_size();
-        let camera = ThirdPersonCamera::new(window_size.0 as f32 / window_size.1 as f32);
+        let camera = ThirdPersonCamera::new([0.0, 10.0, 0.0], window_size.0 as f32 / window_size.1 as f32);
 
-        let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress;
+        let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * IDENTITY_MATRIX.len() as wgpu::BufferAddress;
         let buffer = UniformBuffer::new(
             &engine.get_device(),
-            &vec![[0.0, 0.0, 0.0, 0.0]], 
+            &IDENTITY_MATRIX.into(), 
             size,
         );
         fish.set_uniform_buffer(buffer);
@@ -38,6 +48,9 @@ impl Player {
 
             position : Vector3::new(0.0, 0.0, 0.0),
             momentum: Vector3::new(0.0, 0.0, 0.0),
+
+            rotation_angle : Rad(0.0),
+            old_momentum : Vector3::new(0.0, 0.0, 0.0),
         }
     }
 
@@ -51,15 +64,18 @@ impl Player {
         self.camera.update_position(self.position); 
         self.camera.update_aspect_ratio(engine);
 
-        let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress;
-        self.model.update_uniform_buffer(engine.get_device(), &vec![self.position.to_arr4()], size);
+        let model_matrix = self.get_model_matrix();
+        let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * model_matrix.len() as wgpu::BufferAddress;
+        self.model.update_uniform_buffer(engine.get_device(), &model_matrix, size);
     }
 
     pub fn reset_momentum(&mut self) {
+        self.old_momentum = self.momentum;
         self.momentum = Vector3::new(0.0, 0.0, 0.0); 
     }
 
     fn update_momentum(&mut self, direction : Vector3<f32>) {
+        self.old_momentum = self.momentum;
         self.momentum += direction * SPEED;
         self.momentum = self.momentum.normalize() * SPEED;
     }
@@ -87,5 +103,19 @@ impl Player {
             }
             _ => {}
         }
+    }
+
+    fn get_model_matrix(&mut self) -> Vec<[f32; 4]> {
+        let mut model_matrix = cgmath::Matrix4::identity();
+        model_matrix = model_matrix * cgmath::Matrix4::from_translation(self.position);
+        self.rotation_angle = cgmath::Rad(self.old_momentum.x.atan2(self.old_momentum.z)) - cgmath::Rad(std::f32::consts::PI / 2.0);
+        model_matrix = model_matrix * cgmath::Matrix4::from_axis_angle(cgmath::Vector3::unit_y(), self.rotation_angle);
+        
+        let mut v = Vec::new(); 
+        let modmat : [[f32; 4]; 4] = model_matrix.into();
+        for m in modmat {
+            v.push(m);
+        }
+        v
     }
 }

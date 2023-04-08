@@ -15,7 +15,7 @@ var<uniform> camera_data: CameraData;
 var<storage, read_write> light_data: array<Light>;
 
 @group(2) @binding(0)
-var<uniform> model_position : vec4<f32>;
+var<uniform> model_matrix : mat4x4<f32>;
 
 @group(3) @binding(0)
 var<storage, read_write> materials : array<UnTexturedMaterial>;
@@ -30,7 +30,7 @@ fn vs_main(
     var out: VertexOutput;
     out.normal = vertex_input.normal.xyz;
     out.tex_coords = vertex_input.tex_coords;
-    out.position = camera_data.transform * (vertex_input.v_position + model_position);
+    out.position = camera_data.transform * model_matrix * vertex_input.v_position;
     out.original_position = vertex_input.v_position.xyz;
     return out;
 }

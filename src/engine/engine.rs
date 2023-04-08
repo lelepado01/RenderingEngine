@@ -7,6 +7,14 @@ use crate::engine::imgui_engine;
 use super::builders::texture_builder;
 use super::env::time::TimeUtils;
 
+const EXCLUSIVE_KEYS : [(winit::event::VirtualKeyCode, winit::event::VirtualKeyCode); 6] = [
+    (winit::event::VirtualKeyCode::W, winit::event::VirtualKeyCode::S),
+    (winit::event::VirtualKeyCode::S, winit::event::VirtualKeyCode::W),
+    (winit::event::VirtualKeyCode::A, winit::event::VirtualKeyCode::D),
+    (winit::event::VirtualKeyCode::D, winit::event::VirtualKeyCode::A),
+    (winit::event::VirtualKeyCode::Space, winit::event::VirtualKeyCode::LShift),
+    (winit::event::VirtualKeyCode::LShift, winit::event::VirtualKeyCode::Space),
+];
 
 pub struct EngineData {
     pub surface_engine : surface_engine::SurfaceEngine,
@@ -110,9 +118,18 @@ impl EngineData {
         self.imgui_engine.begin_update(&self.surface_engine.window, self.clock.frame_duration());
     }
 
+    pub fn excl_key_is_pressed(&self, key : winit::event::VirtualKeyCode) -> bool {
+        for (k1, k2) in EXCLUSIVE_KEYS.iter(){
+            if *k1 == key && self.keys_pressed.contains(k2){
+                return true;
+            }
+        }
+        false
+    }
+
     pub fn update_key_state(&mut self, keycode : winit::event::VirtualKeyCode, pressed : bool){
         if pressed {
-            if !self.keys_pressed.contains(&keycode){
+            if !self.keys_pressed.contains(&keycode) && !self.excl_key_is_pressed(keycode) {
                 self.keys_pressed.push(keycode);
             }
         } else {

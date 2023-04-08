@@ -1,7 +1,9 @@
-use cgmath::{Vector3, InnerSpace, SquareMatrix, Rad, VectorSpace};
+use cgmath::{Vector3, InnerSpace, SquareMatrix};
 use winit::event::VirtualKeyCode;
 
 use crate::engine::{models::{model, loading}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::third_person_camera::ThirdPersonCamera};
+
+mod aesthetics;
 
 pub struct Player {
     pub model : model::Model,
@@ -10,10 +12,7 @@ pub struct Player {
     pub position : Vector3<f32>,
     momentum : Vector3<f32>, 
 
-    // aesthetics parameters
-    y_fluctuation : f32,
-    rotation_angle : Rad<f32>,
-    old_momentum : Vector3<f32>,
+    pub aesthetics : aesthetics::PlayerAestheticsParams,
 }
 
 const SPEED : f32 = 10.0; 
@@ -51,9 +50,7 @@ impl Player {
             position : Vector3::new(0.0, 0.0, 0.0),
             momentum: Vector3::new(0.0, 0.0, 0.0),
 
-            y_fluctuation : 0.0,
-            rotation_angle : Rad(0.0),
-            old_momentum : Vector3::new(0.0, 0.0, 0.0),
+            aesthetics : aesthetics::PlayerAestheticsParams::new(),
         }
     }
 
@@ -64,13 +61,10 @@ impl Player {
         }
 
         self.position += self.momentum * delta_time;
-        // update position y to follow sin wave
-        self.y_fluctuation = (engine.clock.get_time() * 2.0).sin() * 0.5;
-        
+        self.aesthetics.update(delta_time, engine, self.momentum);
+
         self.camera.update_position(self.position); 
-        self.camera.update_aspect_ratio(engine);
-        
-        self.old_momentum = self.old_momentum.lerp(self.momentum, delta_time * 10.0);
+        self.camera.update_aspect_ratio(engine);      
 
         let model_matrix = self.get_model_matrix();
         let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * model_matrix.len() as wgpu::BufferAddress;
@@ -78,7 +72,6 @@ impl Player {
     }
 
     pub fn reset_momentum(&mut self) {
-        self.old_momentum = self.momentum;
         self.momentum = Vector3::new(0.0, 0.0, 0.0); 
     }
 
@@ -90,34 +83,25 @@ impl Player {
     fn handle_input(&mut self, keycode : VirtualKeyCode) {
         let forward = Vector3::new(self.camera.forward.x, 0.0, self.camera.forward.z).normalize();
         match keycode {
-            VirtualKeyCode::W => {
-                self.update_momentum(forward);
-            }
-            VirtualKeyCode::S => {
-                self.update_momentum(-forward);
-            }
-            VirtualKeyCode::A => {
-                self.update_momentum(-forward.cross(Vector3::unit_y()));
-            }
-            VirtualKeyCode::D => {
-                self.update_momentum(forward.cross(Vector3::unit_y()));
-            }
-            VirtualKeyCode::Space => {
-                self.update_momentum(Vector3::unit_y()); 
-            }
-            VirtualKeyCode::LShift => {
-                self.update_momentum(-Vector3::unit_y()); 
-            }
+            VirtualKeyCode::W => { self.update_momentum(forward); }
+            VirtualKeyCode::S => { self.update_momentum(-forward); }
+            VirtualKeyCode::A => { self.update_momentum(-forward.cross(Vector3::unit_y())); }
+            VirtualKeyCode::D => { self.update_momentum(forward.cross(Vector3::unit_y())); }
+            VirtualKeyCode::Space => { self.update_momentum(Vector3::unit_y()); }
+            VirtualKeyCode::LShift => { self.update_momentum(-Vector3::unit_y()); }
             _ => {}
         }
     }
 
     fn get_model_matrix(&mut self) -> Vec<[f32; 4]> {
         let mut model_matrix = cgmath::Matrix4::identity();
-        let fluctuating_position = self.position + Vector3::new(0.0, self.y_fluctuation, 0.0);
-        model_matrix = model_matrix * cgmath::Matrix4::from_translation(fluctuating_position);
-        self.rotation_angle = cgmath::Rad(self.old_momentum.x.atan2(self.old_momentum.z)) - cgmath::Rad(std::f32::consts::PI / 2.0);
-        model_matrix = model_matrix * cgmath::Matrix4::from_axis_angle(cgmath::Vector3::unit_y(), self.rotation_angle);
+        model_matrix = model_matrix * cgmath::Matrix4::from_translation(
+            self.aesthetics.get_aesthetic_position(self.position)
+        );
+        model_matrix = model_matrix * cgmath::Matrix4::from_axis_angle(
+            cgmath::Vector3::unit_y(), 
+            self.aesthetics.get_aesthetic_angle()
+        );
         
         let mut v = Vec::new(); 
         let modmat : [[f32; 4]; 4] = model_matrix.into();

@@ -1,7 +1,7 @@
-use cgmath::{Vector3, InnerSpace, SquareMatrix, Rad};
+use cgmath::{Vector3, InnerSpace, SquareMatrix, Rad, VectorSpace};
 use winit::event::VirtualKeyCode;
 
-use crate::engine::{models::{model, loading}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, utils::array_extentions::ToArray4, camera::third_person_camera::ThirdPersonCamera};
+use crate::engine::{models::{model, loading}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::third_person_camera::ThirdPersonCamera};
 
 pub struct Player {
     pub model : model::Model,
@@ -10,6 +10,8 @@ pub struct Player {
     pub position : Vector3<f32>,
     momentum : Vector3<f32>, 
 
+    // aesthetics parameters
+    y_fluctuation : f32,
     rotation_angle : Rad<f32>,
     old_momentum : Vector3<f32>,
 }
@@ -49,6 +51,7 @@ impl Player {
             position : Vector3::new(0.0, 0.0, 0.0),
             momentum: Vector3::new(0.0, 0.0, 0.0),
 
+            y_fluctuation : 0.0,
             rotation_angle : Rad(0.0),
             old_momentum : Vector3::new(0.0, 0.0, 0.0),
         }
@@ -61,8 +64,13 @@ impl Player {
         }
 
         self.position += self.momentum * delta_time;
+        // update position y to follow sin wave
+        self.y_fluctuation = (engine.clock.get_time() * 2.0).sin() * 0.5;
+        
         self.camera.update_position(self.position); 
         self.camera.update_aspect_ratio(engine);
+        
+        self.old_momentum = self.old_momentum.lerp(self.momentum, delta_time * 10.0);
 
         let model_matrix = self.get_model_matrix();
         let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * model_matrix.len() as wgpu::BufferAddress;
@@ -75,7 +83,6 @@ impl Player {
     }
 
     fn update_momentum(&mut self, direction : Vector3<f32>) {
-        self.old_momentum = self.momentum;
         self.momentum += direction * SPEED;
         self.momentum = self.momentum.normalize() * SPEED;
     }
@@ -107,7 +114,8 @@ impl Player {
 
     fn get_model_matrix(&mut self) -> Vec<[f32; 4]> {
         let mut model_matrix = cgmath::Matrix4::identity();
-        model_matrix = model_matrix * cgmath::Matrix4::from_translation(self.position);
+        let fluctuating_position = self.position + Vector3::new(0.0, self.y_fluctuation, 0.0);
+        model_matrix = model_matrix * cgmath::Matrix4::from_translation(fluctuating_position);
         self.rotation_angle = cgmath::Rad(self.old_momentum.x.atan2(self.old_momentum.z)) - cgmath::Rad(std::f32::consts::PI / 2.0);
         model_matrix = model_matrix * cgmath::Matrix4::from_axis_angle(cgmath::Vector3::unit_y(), self.rotation_angle);
         

@@ -1,4 +1,4 @@
-use engine::{utils, env::{self, light::LightData}, models::{instance_data::PositionInstanceData, instanced_model, model}};
+use engine::{utils, env::light::LightData, models::{instance_data::PositionInstanceData, instanced_model}};
 use imgui::*;
 use winit::{
     event::{ElementState, Event, KeyboardInput, WindowEvent},
@@ -103,7 +103,7 @@ fn main() {
     
                 for i in 0..300 {
                     for j in 0..300 {
-                        let height = (i as f32 * 0.2 + engine.clock.get_time()).sin() * 3.0 * (j as f32 * 0.1 + engine.clock.get_time() * 0.5).cos() * 3.0;
+                        let height = 0.0; //(i as f32 * 0.2 + engine.clock.get_time()).sin() * 3.0 * (j as f32 * 0.1 + engine.clock.get_time() * 0.5).cos() * 3.0;
                         let material_id = (i % 3) as f32;
                         poss.push([2.0 * i as f32, height, 2.0* j as f32, 1.0, material_id]);
                     }
@@ -136,6 +136,10 @@ fn main() {
                         ui.input_float3("Camera position", &mut camera_position).build();
                         let mut camera_rotation : [f32; 3] = player.camera.forward.into();
                         ui.input_float3("Camera rotation", &mut camera_rotation).build();  
+
+                        let mut player_position : [f32; 3] = player.position.into();
+                        ui.input_float3("Player position", &mut player_position).build();
+
                     }
                 );                 
                 

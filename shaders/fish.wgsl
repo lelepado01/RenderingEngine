@@ -28,10 +28,10 @@ fn vs_main(
     vertex_input: VertexInput,
 ) -> VertexOutput {
     var out: VertexOutput;
-    out.normal = vertex_input.normal.xyz;
+    out.normal = (transpose(model_matrix) * vertex_input.normal).xyz;
     out.tex_coords = vertex_input.tex_coords;
     out.position = camera_data.transform * model_matrix * vertex_input.v_position;
-    out.original_position = vertex_input.v_position.xyz;
+    out.original_position = (model_matrix * vertex_input.v_position).xyz;
     return out;
 }
 

@@ -123,6 +123,7 @@ pub fn create_render_pass<'a>(
     view : &'a wgpu::TextureView,
     depth_texture_view : &'a wgpu::TextureView,
     encoder : &'a mut wgpu::CommandEncoder,
+    [r, g, b, a] : [f32; 4]
 ) -> wgpu::RenderPass<'a> {
     encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
         label: None,
@@ -132,7 +133,7 @@ pub fn create_render_pass<'a>(
                 resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Clear(
-                        wgpu::Color { r: 0.1, g: 0.2, b: 0.3, a: 1.0 }
+                        wgpu::Color { r: r as f64, g: g as f64, b: b as f64, a: a as f64 }
                     ),
                     store: true,
                 }

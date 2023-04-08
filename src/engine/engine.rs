@@ -1,5 +1,6 @@
 use winit::event::Event;
 use winit::event_loop::EventLoop;
+use winit::window::Fullscreen;
 
 use crate::engine::surface_engine;
 use crate::engine::imgui_engine;
@@ -131,10 +132,18 @@ impl EngineData {
         if pressed {
             if !self.keys_pressed.contains(&keycode) && !self.excl_key_is_pressed(keycode) {
                 self.keys_pressed.push(keycode);
+
+                if keycode == winit::event::VirtualKeyCode::F {
+                    self.set_fullscreen(true);
+                }
             }
         } else {
             if let Some(index) = self.keys_pressed.iter().position(|&k| k == keycode){
                 self.keys_pressed.remove(index);
+
+                if keycode == winit::event::VirtualKeyCode::F {
+                    self.set_fullscreen(false);
+                }
             }
         }
     }
@@ -143,6 +152,14 @@ impl EngineData {
         self.imgui_engine.end_update(&self.device, &self.queue, self.surface_engine.get_view(), &mut encoder);
         self.queue.submit(Some(encoder.finish()));
         self.surface_engine.end_frame();
+    }
+
+    fn set_fullscreen(&mut self, fullscreen : bool){
+        if fullscreen {
+            self.surface_engine.window.set_fullscreen(Some(Fullscreen::Borderless(None)));
+        } else {
+            self.surface_engine.window.set_fullscreen(None);
+        }
     }
 
     pub fn handle_ui_event(&mut self, event : &Event<()>){

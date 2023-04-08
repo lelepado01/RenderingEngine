@@ -9,6 +9,8 @@ use crate::engine::builders::pipeline_builder::PipelineBuilder;
 use crate::engine::builders;
 use crate::engine::models::rendering::DrawModel;
 
+const BACKGROUND_COLOR: [f32; 4] = [ 0.05, 0.05, 0.1, 1.0 ];
+
 pub struct MeshEngine {
     uniform_buffers: Vec<UniformBuffer>,
     storage_buffers: Vec<StorageBuffer>,
@@ -93,7 +95,7 @@ impl MeshEngine {
         self.frames_draw_calls = entity_data.instanced_models.len() + entity_data.models.len();
 
         {
-            let mut rpass = builders::pipeline_builder::create_render_pass(view, depth_texture_view, encoder);
+            let mut rpass = builders::pipeline_builder::create_render_pass(view, depth_texture_view, encoder, BACKGROUND_COLOR);
 
             let mut bind_index_offset = 0;
             rpass.set_pipeline(&self.pipelines[0]);

@@ -14,9 +14,9 @@ impl LightData {
 
         Self {
             position : pos,
-            ambient : [0.5, 0.5, 0.5],
-            diffuse : [0.2, 0.1, 0.1],
-            specular : [0.1, 0.1, 0.1],
+            ambient : [0.2, 0.2, 0.3],
+            diffuse : [0.1, 0.1, 0.2],
+            specular : [0.1, 0.1, 0.2],
         }
     }
 

@@ -18,7 +18,7 @@ fn main() {
     let mut player = game::player::Player::new(&engine);
 
     let light = LightData::new([300.0, 5.0, 300.0]);
-    let light2 = LightData::new([500.0, 5.0, 500.0]);
+    // let light2 = LightData::new([500.0, 5.0, 500.0]);
 
     let mut poss = Vec::<[f32; 5]>::new();
     
@@ -37,7 +37,7 @@ fn main() {
         instances,
     ).expect("Failed to create OBJ model"); 
 
-    let entity_data = EntityData::new(vec![light, light2], vec![&model], vec![&player.model]);
+    let entity_data = EntityData::new(vec![light], vec![&model], vec![&player.model]);
 
     let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &player.camera, &entity_data);
 
@@ -103,14 +103,14 @@ fn main() {
     
                 for i in 0..300 {
                     for j in 0..300 {
-                        let height = 0.0; //(i as f32 * 0.2 + engine.clock.get_time()).sin() * 3.0 * (j as f32 * 0.1 + engine.clock.get_time() * 0.5).cos() * 3.0;
+                        let height = (i as f32 * 0.2 + engine.clock.get_time()).sin() * 3.0 * (j as f32 * 0.1 + engine.clock.get_time() * 0.5).cos() * 3.0;
                         let material_id = (i % 3) as f32;
                         poss.push([2.0 * i as f32, height, 2.0* j as f32, 1.0, material_id]);
                     }
                 }
                 let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: [x[0], x[1], x[2], x[3]], material_index: [x[4], 0.0, 0.0, 0.0] }).collect();
                 model.update_instances(&engine.get_device(), &instances); 
-                let entity_data = EntityData::new(vec![light, light2], vec![&model], vec![&player.model]);
+                let entity_data = EntityData::new(vec![light], vec![&model], vec![&player.model]);
 
                 mesh_engine.update(&engine.get_device(), &player.camera, &entity_data); 
 
@@ -136,10 +136,6 @@ fn main() {
                         ui.input_float3("Camera position", &mut camera_position).build();
                         let mut camera_rotation : [f32; 3] = player.camera.forward.into();
                         ui.input_float3("Camera rotation", &mut camera_rotation).build();  
-
-                        let mut player_position : [f32; 3] = player.position.into();
-                        ui.input_float3("Player position", &mut player_position).build();
-
                     }
                 );                 
                 

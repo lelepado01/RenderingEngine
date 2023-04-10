@@ -72,6 +72,7 @@ impl EngineData {
         &self.device
     }
 
+    #[allow(dead_code)]
     pub fn get_queue(&self) -> &wgpu::Queue {
         &self.queue
     }

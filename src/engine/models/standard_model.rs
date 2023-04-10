@@ -1,5 +1,5 @@
 
-use super::{mesh::Mesh, material::{UnTexturedMaterial, TexturedMaterial}, textures::{parse_textured_material, parse_untextured_material}, vertices::{standard_vertex::StandardModelVertex, Parsable, CalculateNormals}};
+use super::{mesh::Mesh, material::{UnTexturedMaterial}, vertices::{standard_vertex::StandardModelVertex, Parsable, CalculateNormals}};
 use crate::engine::buffers::{uniform_buffer::UniformBuffer, material_buffer::MaterialBuffer, self};
 
 pub struct StandardModel {
@@ -11,7 +11,6 @@ pub struct StandardModel {
 impl StandardModel {
     pub fn new(
         device: &wgpu::Device,
-        queue: &wgpu::Queue,
         model_path: &str,
     ) -> anyhow::Result<StandardModel> {
     
@@ -19,19 +18,6 @@ impl StandardModel {
             model_path, 
             &tobj::LoadOptions { triangulate: true, single_index: true, ..Default::default()}
         ).expect("Failed to OBJ load file");
-    
-        let mut obj_untextured_materials : Vec<UnTexturedMaterial> = Vec::new();
-        let mut obj_textured_materials : Vec<TexturedMaterial> = Vec::new();
-    
-        for m in materials.expect("Failed to load materials") {
-            if m.diffuse_texture != "" {
-                let material = parse_textured_material(m, device, queue).expect("Failed to parse material");
-                obj_textured_materials.push(material); 
-            } else {
-                let material = parse_untextured_material(m).expect("Failed to parse material");
-                obj_untextured_materials.push(material); 
-            }
-        }
     
         let meshes = models
             .into_iter()
@@ -55,6 +41,12 @@ impl StandardModel {
                 }
             })
             .collect::<Vec<_>>();
+
+        let obj_untextured_materials : Vec<UnTexturedMaterial> =
+            materials.expect("Failed to load materials")
+                .iter()
+                .map(|m| UnTexturedMaterial::from(m))
+                .collect();
     
         Ok(StandardModel { 
             meshes, 

@@ -1,5 +1,5 @@
 use crate::engine::buffers::{self, storage_buffer::{self, StorageBuffer}};
-use super::{mesh::Mesh, vertices::{VertexData, instanced_vertex::InstancedModelVertex, Parsable, CalculateNormals}, textures::{parse_textured_material, parse_untextured_material}, material::{UnTexturedMaterial, TexturedMaterial}};
+use super::{mesh::Mesh, vertices::{VertexData, instanced_vertex::InstancedModelVertex, Parsable, CalculateNormals}, material::{UnTexturedMaterial}};
 
 pub struct InstancedModel {
     pub meshes: Vec<Mesh>,
@@ -11,7 +11,6 @@ pub struct InstancedModel {
 impl InstancedModel {
     pub fn new<T>(
         device: &wgpu::Device,
-        queue: &wgpu::Queue,
         path: &str,
         instances: Vec<T>,
     ) -> Self 
@@ -21,19 +20,6 @@ impl InstancedModel {
             path, 
             &tobj::LoadOptions { triangulate: true, single_index: true, ..Default::default()}
         ).expect("Failed to OBJ load file");
-
-        let mut obj_untextured_materials : Vec<UnTexturedMaterial> = Vec::new();
-        let mut obj_textured_materials : Vec<TexturedMaterial> = Vec::new();
-
-        for m in materials.expect("Failed to load materials") {
-            if m.diffuse_texture != "" {
-                let material = parse_textured_material(m, device, queue).expect("Failed to parse material");
-                obj_textured_materials.push(material); 
-            } else {
-                let material = parse_untextured_material(m).expect("Failed to parse material");
-                obj_untextured_materials.push(material); 
-            }
-        }
 
         let meshes = models
             .into_iter()
@@ -57,6 +43,12 @@ impl InstancedModel {
                 }
             })
             .collect::<Vec<_>>();
+
+            let obj_untextured_materials : Vec<UnTexturedMaterial> = 
+                materials.expect("Failed to load materials")
+                    .iter()
+                    .map(|m| UnTexturedMaterial::from(m))
+                    .collect();
 
             let mut data = Vec::new();
             for material in obj_untextured_materials {

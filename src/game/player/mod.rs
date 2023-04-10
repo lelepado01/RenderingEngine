@@ -28,7 +28,6 @@ impl Player {
     pub fn new(engine : &EngineData) -> Self {
         let mut fish = StandardModel::new(
             &engine.get_device(), 
-            &engine.get_queue(),
             "assets/dory.obj", 
         ).expect("Failed to create OBJ model");
 

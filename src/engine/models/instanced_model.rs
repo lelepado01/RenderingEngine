@@ -58,7 +58,7 @@ impl InstancedModel {
         Ok(Self::new(
             device, 
             model.meshes, 
-            model.material_buffer, 
+            model.instance_materials_buffer.unwrap(), 
             instances
         ))
     }

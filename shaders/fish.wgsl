@@ -32,7 +32,7 @@ fn vs_main(
     out.tex_coords = vertex_input.tex_coords.xy;
     out.position = camera_data.transform * model_matrix * vertex_input.v_position;
     out.original_position = (model_matrix * vertex_input.v_position).xyz;
-    out.material_id = vertex_input.material_id.x;
+    // out.material_id = vertex_input.material_id.x;
     return out;
 }
 
@@ -42,7 +42,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     var result : vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
 
     for (var i = 0; i < 2; i = i + 1) {
-        result += calc_light(in, light_data[i], i32(in.material_id));
+        result += calc_light(in, light_data[i], 0);
     }
 
     return vec4<f32>(result, 1.0);

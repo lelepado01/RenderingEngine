@@ -1,10 +1,11 @@
 
 use super::{mesh::Mesh};
-use crate::engine::buffers::{storage_buffer::StorageBuffer, uniform_buffer::UniformBuffer};
+use crate::engine::buffers::{storage_buffer::StorageBuffer, uniform_buffer::UniformBuffer, material_buffer::MaterialBuffer};
 
 pub struct Model {
     pub meshes : Vec<Mesh>,
-    pub material_buffer : StorageBuffer,
+    pub instance_materials_buffer : Option<StorageBuffer>,
+    pub material_buffer : Option<MaterialBuffer>,
     pub uniform_buffer : std::option::Option<UniformBuffer>,
 }
 

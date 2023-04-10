@@ -15,19 +15,4 @@ impl<'a> EntityData<'a> {
             models,
         }
     }
-
-    #[allow(dead_code)]
-    pub fn add_light(&mut self, light : LightData) {
-        self.lights.push(light);
-    }
-
-    #[allow(dead_code)]
-    pub fn add_instanced_model(&mut self, model : &'a InstancedModel) {
-        self.instanced_models.push(model);
-    }
-
-    #[allow(dead_code)]
-    pub fn add_model(&mut self, model : &'a StandardModel) {
-        self.models.push(model);
-    }
 }

@@ -5,4 +5,4 @@ pub mod standard_model;
 pub mod instanced_model;
 pub mod material;
 pub mod rendering;
-pub mod loading;
+pub mod textures;

@@ -1,6 +1,6 @@
 use bytemuck::{Pod, Zeroable};
 use crate::engine::utils::array_extentions::ToArray4;
-use super::VertexData;
+use super::{VertexData, Parsable};
 
 
 #[repr(C)]
@@ -47,5 +47,28 @@ impl VertexData for InstancedModelVertex {
             ]
         }
     }
-    
+}
+
+impl Parsable for InstancedModelVertex {
+    fn from_mesh(index : usize, mesh : &tobj::Mesh) -> Self {
+        if mesh.normals.len() == 0 {
+            return InstancedModelVertex {
+                _pos: [ mesh.positions[index * 3], mesh.positions[index * 3 + 1], mesh.positions[index * 3 + 2], 1.0],
+                _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1]],
+                _normal: [0.0, 0.0, 0.0, 1.0],
+            }
+        } else if mesh.texcoords.len() == 0 {
+            return InstancedModelVertex {
+                _pos: [ mesh.positions[index * 3], mesh.positions[index * 3 + 1], mesh.positions[index * 3 + 2], 1.0],
+                _tex_coord: [0.0, 0.0],
+                _normal: [ mesh.normals[index * 3], mesh.normals[index * 3 + 1], mesh.normals[index * 3 + 2], 1.0],
+            };
+        } else {
+            return InstancedModelVertex {
+                _pos: [ mesh.positions[index * 3], mesh.positions[index * 3 + 1], mesh.positions[index * 3 + 2], 1.0],
+                _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1]],
+                _normal: [ mesh.normals[index * 3], mesh.normals[index * 3 + 1], mesh.normals[index * 3 + 2], 1.0],
+            }; 
+        }
+    }
 }

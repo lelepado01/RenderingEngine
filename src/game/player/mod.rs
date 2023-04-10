@@ -1,7 +1,7 @@
 use cgmath::{Vector3, InnerSpace, SquareMatrix};
 use winit::event::VirtualKeyCode;
 
-use crate::engine::{models::{standard_model, loading}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::third_person_camera::ThirdPersonCamera};
+use crate::engine::{models::{standard_model::{self, StandardModel}}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::third_person_camera::ThirdPersonCamera};
 
 mod aesthetics;
 
@@ -26,7 +26,7 @@ const IDENTITY_MATRIX : [[f32; 4]; 4] = [
 
 impl Player {
     pub fn new(engine : &EngineData) -> Self {
-        let mut fish = loading::load_model_standard(
+        let mut fish = StandardModel::new(
             &engine.get_device(), 
             &engine.get_queue(),
             "assets/dory.obj", 

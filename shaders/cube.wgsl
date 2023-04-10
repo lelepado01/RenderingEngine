@@ -34,7 +34,7 @@ fn vs_main(
 ) -> VertexOutput {
     var out: VertexOutput;
     out.normal = vertex_input.normal.xyz;
-    out.tex_coords = vertex_input.tex_coords.xy;
+    out.tex_coords = vertex_input.tex_coords;
     out.position = camera_data.transform * (vertex_input.v_position + instance_input.i_position);
     out.original_position = vertex_input.v_position.xyz + instance_input.i_position.xyz;
     out.material_id = instance_input.instance_material_id.x;

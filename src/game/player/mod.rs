@@ -29,7 +29,7 @@ impl Player {
         let mut fish = loading::load_model_standard(
             &engine.get_device(), 
             &engine.get_queue(),
-            "assets/seahorse.obj", 
+            "assets/dory.obj", 
         ).expect("Failed to create OBJ model");
 
         let window_size = engine.get_window_size();

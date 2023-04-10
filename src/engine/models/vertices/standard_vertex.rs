@@ -9,8 +9,7 @@ use super::VertexData;
 pub struct StandardModelVertex {
     pub _pos: [f32; 4],
     pub _normal: [f32; 4],
-    pub _tex_coord: [f32; 4],
-    pub _model_id: [f32; 4],
+    pub _tex_coord: [f32; 2],
 }
 
 impl StandardModelVertex {
@@ -19,8 +18,7 @@ impl StandardModelVertex {
         StandardModelVertex {
             _pos: pos.to_arr4(),
             _normal: normal.to_arr4(),
-            _tex_coord: [0.0, 0.0, 0.0, 0.0],
-            _model_id: [0.0, 0.0, 0.0, 0.0], 
+            _tex_coord: [0.0, 0.0],
         }
     }
 }
@@ -45,12 +43,7 @@ impl VertexData for StandardModelVertex {
                 wgpu::VertexAttribute {
                     offset: 2 * std::mem::size_of::<[f32;4]>() as wgpu::BufferAddress,
                     shader_location: 2,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: 3 * std::mem::size_of::<[f32;4]>() as wgpu::BufferAddress,
-                    shader_location: 3,
-                    format: wgpu::VertexFormat::Float32x4,
+                    format: wgpu::VertexFormat::Float32x2,
                 },
             ]
         }

@@ -256,9 +256,8 @@ pub fn parse_standard_vertex(index : usize, mesh : &tobj::Mesh) -> StandardModel
                 mesh.positions[index * 3 + 2],
                 1.0,
             ],
-            _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1], 0.0, 0.0],
+            _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1]],
             _normal: [0.0, 0.0, 0.0, 1.0],
-            _model_id: [mesh.material_id.expect("Material not found") as f32, 0.0, 0.0, 1.0],
         }
     } else if mesh.texcoords.len() == 0 {
         return StandardModelVertex {
@@ -268,14 +267,13 @@ pub fn parse_standard_vertex(index : usize, mesh : &tobj::Mesh) -> StandardModel
                 mesh.positions[index * 3 + 2],
                 1.0,
             ],
-            _tex_coord: [0.0, 0.0, 0.0, 0.0],
+            _tex_coord: [0.0, 0.0],
             _normal: [
                 mesh.normals[index * 3],
                 mesh.normals[index * 3 + 1],
                 mesh.normals[index * 3 + 2],
                 1.0,
             ],
-            _model_id: [mesh.material_id.expect("Material not found") as f32, 0.0, 0.0, 1.0],
         };
     } else {
         return StandardModelVertex {
@@ -285,14 +283,13 @@ pub fn parse_standard_vertex(index : usize, mesh : &tobj::Mesh) -> StandardModel
                 mesh.positions[index * 3 + 2],
                 1.0,
             ],
-            _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1], 0.0, 0.0],
+            _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1]],
             _normal: [
                 mesh.normals[index * 3],
                 mesh.normals[index * 3 + 1],
                 mesh.normals[index * 3 + 2],
                 1.0,
             ],
-            _model_id: [mesh.material_id.expect("Material not found") as f32, 0.0, 0.0, 1.0],
         }; 
     }
 }

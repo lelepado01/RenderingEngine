@@ -1,7 +1,5 @@
 use bytemuck::{Pod, Zeroable};
-
 use crate::engine::utils::array_extentions::ToArray4;
-
 use super::VertexData;
 
 

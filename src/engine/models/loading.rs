@@ -3,7 +3,7 @@ use crate::engine::buffers::{self, storage_buffer::StorageBuffer};
 use crate::engine::utils::array_math::Add;
 use crate::engine::utils::array_math::ScalarDiv;
 
-use super::{model::Model, material::{UnTexturedMaterial, TexturedMaterial}, mesh::Mesh, vertices::{instanced_vertex::InstancedModelVertex, VertexData, standard_vertex::StandardModelVertex}};
+use super::{model::Model, material::{UnTexturedMaterial, TexturedMaterial}, mesh::Mesh, vertices::{instanced_vertex::InstancedModelVertex, standard_vertex::StandardModelVertex}};
 
 pub fn load_model_instanced(
     device: &wgpu::Device,

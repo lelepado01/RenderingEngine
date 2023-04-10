@@ -26,23 +26,22 @@ var<storage, read_write> materials : array<UnTexturedMaterial>;
 @vertex
 fn vs_main(
     vertex_input: StandardVertexInput,
-) -> VertexOutput {
-    var out: VertexOutput;
+) -> PlayerVertexOutput {
+    var out: PlayerVertexOutput;
     out.normal = (transpose(model_matrix) * vertex_input.normal).xyz;
     out.tex_coords = vertex_input.tex_coords;
     out.position = camera_data.transform * model_matrix * vertex_input.v_position;
     out.original_position = (model_matrix * vertex_input.v_position).xyz;
-    // out.material_id = vertex_input.material_id.x;
     return out;
 }
 
 @fragment
-fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
+fn fs_main(in: PlayerVertexOutput) -> @location(0) vec4<f32> {
     
     var result : vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
 
     for (var i = 0; i < 2; i = i + 1) {
-        result += calc_light(in, light_data[i], 0);
+        result += calc_light_player(in, light_data[i], 0);
     }
 
     return vec4<f32>(result, 1.0);

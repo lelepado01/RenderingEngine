@@ -26,14 +26,14 @@ const IDENTITY_MATRIX : [[f32; 4]; 4] = [
 
 impl Player {
     pub fn new(engine : &EngineData) -> Self {
-        let mut fish = loading::load_model(
+        let mut fish = loading::load_model_standard(
             &engine.get_device(), 
             &engine.get_queue(),
-            "assets/seahorse.obj", 
+            "assets/dory.obj", 
         ).expect("Failed to create OBJ model");
 
         let window_size = engine.get_window_size();
-        let camera = ThirdPersonCamera::new([0.0, 10.0, 0.0], window_size.0 as f32 / window_size.1 as f32);
+        let camera = ThirdPersonCamera::new([0.0, 30.0, 0.0], window_size.0 as f32 / window_size.1 as f32);
 
         let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * IDENTITY_MATRIX.len() as wgpu::BufferAddress;
         let buffer = UniformBuffer::new(
@@ -98,6 +98,7 @@ impl Player {
         model_matrix = model_matrix * cgmath::Matrix4::from_translation(
             self.aesthetics.get_aesthetic_position(self.position)
         );
+        model_matrix = model_matrix * cgmath::Matrix4::from_scale(3.0);
         model_matrix = model_matrix * cgmath::Matrix4::from_axis_angle(
             cgmath::Vector3::unit_y(), 
             self.aesthetics.get_aesthetic_angle()

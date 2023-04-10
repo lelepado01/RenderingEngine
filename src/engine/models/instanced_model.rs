@@ -1,5 +1,5 @@
 use crate::engine::buffers::{self, storage_buffer};
-use super::{mesh::Mesh, instance_data::InstanceData};
+use super::{mesh::Mesh, vertices::VertexData};
 
 pub struct InstancedModel {
     pub meshes: Vec<Mesh>,
@@ -15,7 +15,7 @@ impl InstancedModel {
         material_buffer: storage_buffer::StorageBuffer,
         instances: Vec<T>,
     ) -> Self 
-        where T : InstanceData + bytemuck::Pod + bytemuck::Zeroable 
+        where T : VertexData + bytemuck::Pod + bytemuck::Zeroable 
     {
         let instance_buffer = buffers::create_buffer(
             device,
@@ -51,9 +51,9 @@ impl InstancedModel {
         path: &str,
         instances: Vec<T>,
     ) -> anyhow::Result<Self> 
-        where T : InstanceData + bytemuck::Pod + bytemuck::Zeroable
+        where T : VertexData + bytemuck::Pod + bytemuck::Zeroable
     {
-        let model = super::loading::load_model(device, queue, path).expect("Failed to load model");
+        let model = super::loading::load_model_instanced(device, queue, path).expect("Failed to load model");
         
         Ok(Self::new(
             device, 

@@ -3,8 +3,10 @@ use crate::engine::buffers::{uniform_buffer::{UniformBuffer, SetUniformBuffer}, 
 use super::camera::Camera;
 use super::entity_data;
 use super::env::light::Bufferable;
-use super::models::instance_data::{PositionInstanceData, InstanceData};
-use super::models::vertex::{ModelVertex, VertexType, VertexData};
+use super::models::vertices::instance_data::{PositionInstanceData};
+use super::models::vertices::standard_vertex::StandardModelVertex;
+use super::models::vertices::{VertexData, VertexType};
+use super::models::vertices::instanced_vertex::InstancedModelVertex;
 use crate::engine::builders::pipeline_builder::PipelineBuilder;
 use crate::engine::builders;
 use crate::engine::models::rendering::DrawModel;
@@ -41,11 +43,11 @@ impl MeshEngine {
         let pipeline_layout = pipeline_layout_builder.build(device);
 
         let instanced_pipeline = PipelineBuilder::new()
-            .add_vertex_buffer_layout(ModelVertex::desc())
+            .add_vertex_buffer_layout(InstancedModelVertex::desc())
             .add_vertex_buffer_layout(PositionInstanceData::desc())
             .set_primitive_state(Some(wgpu::Face::Back))
             .set_wireframe_mode(false)  
-            .set_vertex_shader(device, "./shaders/cube.wgsl", VertexType::Vertex)
+            .set_vertex_shader(device, "./shaders/cube.wgsl", VertexType::InstancedVertex)
             .set_fragment_shader(device, "./shaders/cube.wgsl", &config.format)
             .set_pipeline_layout(pipeline_layout)
             .build(device);
@@ -63,10 +65,10 @@ impl MeshEngine {
         let normal_pipeline_layout = pipeline_layout_builder.build(device);
         
         let normal_pipeline = PipelineBuilder::new()
-            .add_vertex_buffer_layout(ModelVertex::desc())
+            .add_vertex_buffer_layout(StandardModelVertex::desc())
             .set_primitive_state(Some(wgpu::Face::Back))
             .set_wireframe_mode(false)  
-            .set_vertex_shader(device, "./shaders/fish.wgsl", VertexType::Vertex)
+            .set_vertex_shader(device, "./shaders/fish.wgsl", VertexType::StandardVertex)
             .set_fragment_shader(device, "./shaders/fish.wgsl", &config.format)
             .set_pipeline_layout(normal_pipeline_layout)
             .build(device);
@@ -91,7 +93,13 @@ impl MeshEngine {
         self.storage_buffers[0] = entity_data.lights.as_storage_buffer(device);
     }
 
-    pub fn render(&mut self, view: &wgpu::TextureView, depth_texture_view : &wgpu::TextureView, encoder: &mut wgpu::CommandEncoder, entity_data : &entity_data::EntityData) {
+    pub fn render(
+        &mut self, 
+        view: &wgpu::TextureView, 
+        depth_texture_view : &wgpu::TextureView, 
+        encoder: &mut wgpu::CommandEncoder, 
+        entity_data : &entity_data::EntityData
+    ) {
         self.frames_draw_calls = entity_data.instanced_models.len() + entity_data.models.len();
 
         {

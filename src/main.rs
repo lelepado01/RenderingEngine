@@ -1,4 +1,4 @@
-use engine::{utils, env::light::LightData, models::{instance_data::PositionInstanceData, instanced_model}};
+use engine::{utils, env::light::LightData, models::{vertices::instance_data::PositionInstanceData, instanced_model}};
 use imgui::*;
 use winit::{
     event::{ElementState, Event, KeyboardInput, WindowEvent},
@@ -18,7 +18,6 @@ fn main() {
     let mut player = game::player::Player::new(&engine);
 
     let light = LightData::new([300.0, 5.0, 300.0]);
-    // let light2 = LightData::new([500.0, 5.0, 500.0]);
 
     let mut poss = Vec::<[f32; 5]>::new();
     

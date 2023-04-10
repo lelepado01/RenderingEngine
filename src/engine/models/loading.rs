@@ -1,11 +1,10 @@
 use crate::engine::buffers::{self, storage_buffer::StorageBuffer};
+use crate::engine::utils::array_math::Add;
+use crate::engine::utils::array_math::ScalarDiv;
 
-use super::{model::Model, material::{UnTexturedMaterial, TexturedMaterial}, vertex::ModelVertex, mesh::Mesh};
+use super::{model::Model, material::{UnTexturedMaterial, TexturedMaterial}, mesh::Mesh, vertices::{instanced_vertex::InstancedModelVertex, VertexData, standard_vertex::StandardModelVertex}};
 
-
-
-
-pub fn load_model(
+pub fn load_model_instanced(
     device: &wgpu::Device,
     queue: &wgpu::Queue,
     model_path: &str,
@@ -33,7 +32,7 @@ pub fn load_model(
         .into_iter()
         .map(|m| {
             let mut vertices = (0..m.mesh.positions.len() / 3)
-                .map(|i| parse_vertex(i, &m.mesh))
+                .map(|i| parse_instanced_vertex(i, &m.mesh))
                 .collect::<Vec<_>>();
 
             let vertex_buffer = buffers::create_buffer(device, buffers::BufferType::Vertex, &vertices);
@@ -47,7 +46,6 @@ pub fn load_model(
 
                     let normal = calculate_face_normal(v1, v2, v3);
 
-                    use crate::engine::utils::array_math::Add;
                     vertices[m.mesh.indices[i] as usize]._normal.add(normal);
                     vertices[m.mesh.indices[i + 1] as usize]._normal.add(normal);
                     vertices[m.mesh.indices[i + 2] as usize]._normal.add(normal);
@@ -55,7 +53,6 @@ pub fn load_model(
             }
 
             for i in 0..vertices.len() {
-                use crate::engine::utils::array_math::ScalarDiv;
                 vertices[i]._normal = vertices[i]._normal.scalar_div(3.0);
             }
 
@@ -84,6 +81,85 @@ pub fn load_model(
         uniform_buffer: None
     })
 }
+
+pub fn load_model_standard(
+    device: &wgpu::Device,
+    queue: &wgpu::Queue,
+    model_path: &str,
+) -> anyhow::Result<Model> {
+
+    let (models, materials) = tobj::load_obj(
+        model_path, 
+        &tobj::LoadOptions { triangulate: true, single_index: true, ..Default::default()}
+    ).expect("Failed to OBJ load file");
+
+    let mut obj_untextured_materials : Vec<UnTexturedMaterial> = Vec::new();
+    let mut obj_textured_materials : Vec<TexturedMaterial> = Vec::new();
+
+    for m in materials.expect("Failed to load materials") {
+        if m.diffuse_texture != "" {
+            let material = parse_textured_material(m, device, queue).expect("Failed to parse material");
+            obj_textured_materials.push(material); 
+        } else {
+            let material = parse_untextured_material(m).expect("Failed to parse material");
+            obj_untextured_materials.push(material); 
+        }
+    }
+
+    let meshes = models
+        .into_iter()
+        .map(|m| {
+            let mut vertices = (0..m.mesh.positions.len() / 3)
+                .map(|i| parse_standard_vertex(i, &m.mesh))
+                .collect::<Vec<_>>();
+
+            let vertex_buffer = buffers::create_buffer(device, buffers::BufferType::Vertex, &vertices);
+            let index_buffer = buffers::create_buffer(device, buffers::BufferType::Index, &m.mesh.indices);
+
+            if vertices[0]._normal == [0.0, 0.0, 0.0, 1.0] {
+                for i in (0..m.mesh.indices.len()-3).step_by(3) {
+                    let v1 = vertices[m.mesh.indices[i] as usize]._pos;
+                    let v2 = vertices[m.mesh.indices[i + 1] as usize]._pos;
+                    let v3 = vertices[m.mesh.indices[i + 2] as usize]._pos;
+
+                    let normal = calculate_face_normal(v1, v2, v3);
+
+                    vertices[m.mesh.indices[i] as usize]._normal.add(normal);
+                    vertices[m.mesh.indices[i + 1] as usize]._normal.add(normal);
+                    vertices[m.mesh.indices[i + 2] as usize]._normal.add(normal);
+                }
+            }
+
+            for i in 0..vertices.len() {
+                vertices[i]._normal = vertices[i]._normal.scalar_div(3.0);
+            }
+
+            Mesh {
+                vertex_data: vertex_buffer,
+                index_data: index_buffer,
+                num_elements: m.mesh.indices.len() as u32,
+                material_index: m.mesh.material_id.unwrap_or(0),
+            }
+        })
+        .collect::<Vec<_>>();
+
+        let mut data = Vec::new();
+        for material in obj_untextured_materials {
+            data.push(material.ambient);
+            data.push(material.diffuse);
+            data.push(material.specular);
+            data.push([material.shininess, 0.0, 0.0, 0.0]);
+        }
+        let size = (std::mem::size_of::<[f32; 4]>() * data.len()) as wgpu::BufferAddress;
+        let buffer = StorageBuffer::new(device, &data, size);
+
+    Ok(Model { 
+        meshes, 
+        material_buffer: buffer, 
+        uniform_buffer: None
+    })
+}
+
 
 pub fn calculate_face_normal(v1 : [f32; 4], v2 : [f32; 4], v3 : [f32; 4]) -> [f32; 4] {
     let mut normal = [0.0, 0.0, 0.0, 1.0];
@@ -116,10 +192,10 @@ pub fn calculate_face_normal(v1 : [f32; 4], v2 : [f32; 4], v3 : [f32; 4]) -> [f3
     return normal;
 }
 
-pub fn parse_vertex(index : usize, mesh : &tobj::Mesh) -> ModelVertex {
+pub fn parse_instanced_vertex(index : usize, mesh : &tobj::Mesh) -> InstancedModelVertex {
 
     if mesh.normals.len() == 0 {
-        return ModelVertex {
+        return InstancedModelVertex {
             _pos: [
                 mesh.positions[index * 3],
                 mesh.positions[index * 3 + 1],
@@ -130,7 +206,7 @@ pub fn parse_vertex(index : usize, mesh : &tobj::Mesh) -> ModelVertex {
             _normal: [0.0, 0.0, 0.0, 1.0],
         }
     } else if mesh.texcoords.len() == 0 {
-        return ModelVertex {
+        return InstancedModelVertex {
             _pos: [
                 mesh.positions[index * 3],
                 mesh.positions[index * 3 + 1],
@@ -146,7 +222,7 @@ pub fn parse_vertex(index : usize, mesh : &tobj::Mesh) -> ModelVertex {
             ],
         };
     } else {
-        return ModelVertex {
+        return InstancedModelVertex {
             _pos: [
                 mesh.positions[index * 3],
                 mesh.positions[index * 3 + 1],
@@ -160,6 +236,57 @@ pub fn parse_vertex(index : usize, mesh : &tobj::Mesh) -> ModelVertex {
                 mesh.normals[index * 3 + 2],
                 1.0,
             ],
+        }; 
+    }
+}
+
+pub fn parse_standard_vertex(index : usize, mesh : &tobj::Mesh) -> StandardModelVertex {
+
+    if mesh.normals.len() == 0 {
+        return StandardModelVertex {
+            _pos: [
+                mesh.positions[index * 3],
+                mesh.positions[index * 3 + 1],
+                mesh.positions[index * 3 + 2],
+                1.0,
+            ],
+            _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1], 0.0, 0.0],
+            _normal: [0.0, 0.0, 0.0, 1.0],
+            _model_id: [mesh.material_id.expect("Material not found") as f32, 0.0, 0.0, 1.0],
+        }
+    } else if mesh.texcoords.len() == 0 {
+        return StandardModelVertex {
+            _pos: [
+                mesh.positions[index * 3],
+                mesh.positions[index * 3 + 1],
+                mesh.positions[index * 3 + 2],
+                1.0,
+            ],
+            _tex_coord: [0.0, 0.0, 0.0, 0.0],
+            _normal: [
+                mesh.normals[index * 3],
+                mesh.normals[index * 3 + 1],
+                mesh.normals[index * 3 + 2],
+                1.0,
+            ],
+            _model_id: [mesh.material_id.expect("Material not found") as f32, 0.0, 0.0, 1.0],
+        };
+    } else {
+        return StandardModelVertex {
+            _pos: [
+                mesh.positions[index * 3],
+                mesh.positions[index * 3 + 1],
+                mesh.positions[index * 3 + 2],
+                1.0,
+            ],
+            _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1], 0.0, 0.0],
+            _normal: [
+                mesh.normals[index * 3],
+                mesh.normals[index * 3 + 1],
+                mesh.normals[index * 3 + 2],
+                1.0,
+            ],
+            _model_id: [mesh.material_id.expect("Material not found") as f32, 0.0, 0.0, 1.0],
         }; 
     }
 }

@@ -1,4 +1,4 @@
-use crate::engine::{models::vertex::VertexType, shaders};
+use crate::engine::{shaders, models::vertices::VertexType};
 
 
 pub struct PipelineBuilder<'a> {
@@ -16,7 +16,7 @@ impl<'a> PipelineBuilder<'a> {
     
     pub fn new() -> Self {
         Self {
-            vertex_type : VertexType::Vertex,
+            vertex_type : VertexType::InstancedVertex,
             vertex_code : None,
             fragment_configs : None,
             fragment_code : None,

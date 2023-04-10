@@ -1,9 +1,6 @@
 use bytemuck::{Zeroable, Pod};
 
-
-pub trait InstanceData {
-    fn desc<'a>() -> wgpu::VertexBufferLayout<'a>; 
-}
+use super::VertexData;
 
 #[repr(C)]
 #[derive(Clone, Copy, Pod, Zeroable, Debug)]
@@ -12,7 +9,7 @@ pub struct PositionInstanceData {
     pub material_index: [f32; 4],
 }
 
-impl InstanceData for PositionInstanceData {
+impl VertexData for PositionInstanceData {
     fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
         wgpu::VertexBufferLayout {
             array_stride: std::mem::size_of::<PositionInstanceData>() as wgpu::BufferAddress,
@@ -24,7 +21,7 @@ impl InstanceData for PositionInstanceData {
                     format: wgpu::VertexFormat::Float32x4,
                 },
                 wgpu::VertexAttribute {
-                    offset: 16,
+                    offset: std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress,
                     shader_location: 4,
                     format: wgpu::VertexFormat::Float32x4,
                 },

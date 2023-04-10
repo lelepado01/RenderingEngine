@@ -1,7 +1,7 @@
 
 use crate::engine::buffers::material_buffer::{MaterialBuffer, SetMaterialBuffer};
 
-use super::{mesh::Mesh, model::Model, instanced_model::InstancedModel};
+use super::{mesh::Mesh, standard_model::StandardModel, instanced_model::InstancedModel};
 
 pub trait DrawModel<'a> {
     fn draw_mesh(&mut self, 
@@ -10,7 +10,7 @@ pub trait DrawModel<'a> {
         material_buffer: &'a MaterialBuffer
     );
 
-    fn draw_model(&mut self, bind_group_index: u32, model: &'a Model);
+    fn draw_model(&mut self, bind_group_index: u32, model: &'a StandardModel);
     fn draw_model_instanced(
         &mut self,
         bind_group_index: u32,
@@ -29,9 +29,9 @@ impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>
         self.draw_indexed(0..mesh.num_elements, 0, 0..1);
     }
 
-    fn draw_model(&mut self, bind_group_index: u32, model: &'b Model) {
+    fn draw_model(&mut self, bind_group_index: u32, model: &'b StandardModel) {
         for mesh in &model.meshes {
-            self.draw_mesh(bind_group_index, mesh, &model.material_buffer.as_ref().unwrap());
+            self.draw_mesh(bind_group_index, mesh, &model.material_buffer);
         }
     }
 

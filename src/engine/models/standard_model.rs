@@ -1,15 +1,14 @@
 
 use super::{mesh::Mesh};
-use crate::engine::buffers::{storage_buffer::StorageBuffer, uniform_buffer::UniformBuffer, material_buffer::MaterialBuffer};
+use crate::engine::buffers::{uniform_buffer::UniformBuffer, material_buffer::MaterialBuffer};
 
-pub struct Model {
+pub struct StandardModel {
     pub meshes : Vec<Mesh>,
-    pub instance_materials_buffer : Option<StorageBuffer>,
-    pub material_buffer : Option<MaterialBuffer>,
+    pub material_buffer : MaterialBuffer,
     pub uniform_buffer : std::option::Option<UniformBuffer>,
 }
 
-impl Model {
+impl StandardModel {
 
     pub fn set_uniform_buffer(&mut self, buffer : UniformBuffer) {
         self.uniform_buffer = Some(buffer);

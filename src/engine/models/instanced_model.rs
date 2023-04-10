@@ -11,24 +11,13 @@ pub struct InstancedModel {
 impl InstancedModel {
     pub fn new<T>(
         device: &wgpu::Device,
-        meshes: Vec<Mesh>,
-        material_buffer: storage_buffer::StorageBuffer,
+        queue: &wgpu::Queue,
+        path: &str,
         instances: Vec<T>,
     ) -> Self 
         where T : VertexData + bytemuck::Pod + bytemuck::Zeroable 
     {
-        let instance_buffer = buffers::create_buffer(
-            device,
-            buffers::BufferType::Instance, 
-            &instances,
-        );
-
-        Self {
-            meshes,
-            material_buffer,
-            instance_buffer,
-            instance_count: instances.len() as u32,
-        }
+        super::loading::load_model_instanced(device, queue, path, instances).expect("Failed to load model")
     }
 
     #[allow(dead_code)]
@@ -43,23 +32,5 @@ impl InstancedModel {
 
         self.instance_buffer = instance_buffer;
         self.instance_count = instances.len() as u32;
-    }
-
-    pub fn load_model<T>(
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-        path: &str,
-        instances: Vec<T>,
-    ) -> anyhow::Result<Self> 
-        where T : VertexData + bytemuck::Pod + bytemuck::Zeroable
-    {
-        let model = super::loading::load_model_instanced(device, queue, path).expect("Failed to load model");
-        
-        Ok(Self::new(
-            device, 
-            model.meshes, 
-            model.instance_materials_buffer.unwrap(), 
-            instances
-        ))
     }
 }

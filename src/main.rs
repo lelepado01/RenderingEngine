@@ -29,12 +29,12 @@ fn main() {
         }
     }
     let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: [x[0], x[1], x[2], x[3]], material_index: [x[4], 0.0, 0.0, 0.0] }).collect();
-    let mut model = instanced_model::InstancedModel::load_model(
+    let mut model = instanced_model::InstancedModel::new(
         &engine.get_device(), 
         &engine.get_queue(),
         "assets/cube.obj", 
         instances,
-    ).expect("Failed to create OBJ model"); 
+    ); 
 
     let entity_data = EntityData::new(vec![light], vec![&model], vec![&player.model]);
 

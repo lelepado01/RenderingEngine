@@ -60,7 +60,7 @@ impl MeshEngine {
             if model.uniform_buffer.is_some() {
                 pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.uniform_buffer.as_ref().unwrap().bind_group_layout);
             }
-            pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.material_buffer.as_ref().unwrap().buffers[0].bind_group_layout);
+            pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.material_buffer.buffers[0].bind_group_layout);
         }
         let normal_pipeline_layout = pipeline_layout_builder.build(device);
         

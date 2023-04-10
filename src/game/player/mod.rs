@@ -1,12 +1,12 @@
 use cgmath::{Vector3, InnerSpace, SquareMatrix};
 use winit::event::VirtualKeyCode;
 
-use crate::engine::{models::{model, loading}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::third_person_camera::ThirdPersonCamera};
+use crate::engine::{models::{standard_model, loading}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::third_person_camera::ThirdPersonCamera};
 
 mod aesthetics;
 
 pub struct Player {
-    pub model : model::Model,
+    pub model : standard_model::StandardModel,
     pub camera : ThirdPersonCamera,
 
     pub position : Vector3<f32>,

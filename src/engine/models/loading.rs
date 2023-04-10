@@ -3,13 +3,18 @@ use crate::engine::buffers::{self, storage_buffer::StorageBuffer};
 use crate::engine::utils::array_math::Add;
 use crate::engine::utils::array_math::ScalarDiv;
 
-use super::{model::Model, material::{UnTexturedMaterial, TexturedMaterial}, mesh::Mesh, vertices::{instanced_vertex::InstancedModelVertex, standard_vertex::StandardModelVertex}};
+use super::instanced_model::InstancedModel;
+use super::vertices::VertexData;
+use super::{standard_model::StandardModel, material::{UnTexturedMaterial, TexturedMaterial}, mesh::Mesh, vertices::{instanced_vertex::InstancedModelVertex, standard_vertex::StandardModelVertex}};
 
-pub fn load_model_instanced(
+pub fn load_model_instanced<T>(
     device: &wgpu::Device,
     queue: &wgpu::Queue,
     model_path: &str,
-) -> anyhow::Result<Model> {
+    instances: Vec<T>,
+) -> anyhow::Result<InstancedModel> 
+    where T : VertexData + bytemuck::Pod + bytemuck::Zeroable
+{
 
     let (models, materials) = tobj::load_obj(
         model_path, 
@@ -76,11 +81,17 @@ pub fn load_model_instanced(
         let size = (std::mem::size_of::<[f32; 4]>() * data.len()) as wgpu::BufferAddress;
         let buffer = StorageBuffer::new(device, &data, size);
 
-    Ok(Model { 
+        let instance_buffer = buffers::create_buffer(
+            device,
+            buffers::BufferType::Instance, 
+            &instances,
+        );
+
+    Ok(InstancedModel { 
         meshes, 
-        material_buffer: None,
-        instance_materials_buffer: Some(buffer), 
-        uniform_buffer: None
+        material_buffer: buffer,
+        instance_buffer,
+        instance_count: instances.len() as u32,
     })
 }
 
@@ -88,7 +99,7 @@ pub fn load_model_standard(
     device: &wgpu::Device,
     queue: &wgpu::Queue,
     model_path: &str,
-) -> anyhow::Result<Model> {
+) -> anyhow::Result<StandardModel> {
 
     let (models, materials) = tobj::load_obj(
         model_path, 
@@ -145,23 +156,9 @@ pub fn load_model_standard(
         })
         .collect::<Vec<_>>();
 
-        // let mut data = Vec::new();
-        // for material in obj_untextured_materials {
-        //     data.push(material.ambient);
-        //     data.push(material.diffuse);
-        //     data.push(material.specular);
-        //     data.push([material.shininess, 0.0, 0.0, 0.0]);
-        // }
-        // let size = (std::mem::size_of::<[f32; 4]>() * data.len()) as wgpu::BufferAddress;
-        // let buffer = StorageBuffer::new(device, &data, size);
-
-        let material_buffer = MaterialBuffer::new(device, &obj_untextured_materials);
-
-
-    Ok(Model { 
+    Ok(StandardModel { 
         meshes, 
-        material_buffer: Some(material_buffer),
-        instance_materials_buffer: None,
+        material_buffer: MaterialBuffer::new(device, &obj_untextured_materials),
         uniform_buffer: None
     })
 }

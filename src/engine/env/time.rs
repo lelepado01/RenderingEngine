@@ -29,6 +29,7 @@ impl TimeUtils {
         self.frame_duration
     }
 
+    #[allow(dead_code)]
     pub fn fps(&self) -> f32 {
         1.0 / self.delta_s
     }

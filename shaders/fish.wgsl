@@ -35,13 +35,15 @@ fn vs_main(
     return out;
 }
 
+#define STANDARD_MATERIAL<i32> 0
+
 @fragment
 fn fs_main(in: PlayerVertexOutput) -> @location(0) vec4<f32> {
     
     var result : vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
 
     for (var i = 0; i < 2; i = i + 1) {
-        result += calc_light_player(in, light_data[i], 0);
+        result += calc_light_player(in, light_data[i], STANDARD_MATERIAL);
     }
 
     return vec4<f32>(result, 1.0);

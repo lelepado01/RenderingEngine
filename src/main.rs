@@ -117,14 +117,15 @@ fn main() {
 
                 engine.surface_engine.begin_frame();
 
-                mesh_engine.render(&engine.surface_engine.get_view(), &engine.depth_texture, &mut encoder, &entity_data);
+                mesh_engine.render(&engine.surface_engine.get_view(), &engine.depth_texture, &mut encoder, &entity_data, &mut engine.engine_stats);
 
                 ui.window("Utils")
                     .size([400.0, 300.0], Condition::FirstUseEver)
                     .build(||{
-                        ui.text(format!("FPS: {}", engine.clock.fps()));
-                        ui.text(format!("Frame time: {} ms", engine.clock.frame_duration().as_millis()));
-                        ui.text(format!("Draw Calls: {}", mesh_engine.frames_draw_calls));
+                        ui.text(format!("FPS: {}", engine.engine_stats.fps));
+                        ui.text(format!("Frame time: {} ms", engine.engine_stats.frames_render_time));
+                        ui.text(format!("Draw Calls: {}", engine.engine_stats.frames_draw_calls));
+                        ui.text(format!("Bytes to GPU: {}", engine.engine_stats.bytes_to_gpu));
 
                         if ui.button("Quit") {
                             *control_flow = ControlFlow::Exit;

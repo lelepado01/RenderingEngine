@@ -10,6 +10,7 @@ pub mod models;
 pub mod shaders;
 pub mod entity_data;
 pub mod camera;
+pub mod stats;
 
 pub mod mesh_engine; 
 pub mod compute_engine;

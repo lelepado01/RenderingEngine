@@ -7,6 +7,7 @@ use super::models::vertices::instance_data::{PositionInstanceData};
 use super::models::vertices::standard_vertex::StandardModelVertex;
 use super::models::vertices::{VertexData, VertexType};
 use super::models::vertices::instanced_vertex::InstancedModelVertex;
+use super::stats::EngineStats;
 use crate::engine::builders::pipeline_builder::PipelineBuilder;
 use crate::engine::builders;
 use crate::engine::models::rendering::DrawModel;
@@ -17,8 +18,6 @@ pub struct MeshEngine {
     uniform_buffers: Vec<UniformBuffer>,
     storage_buffers: Vec<StorageBuffer>,
     pipelines: Vec<wgpu::RenderPipeline>,
-
-    pub frames_draw_calls : usize,
 }
 
 impl MeshEngine {
@@ -77,7 +76,6 @@ impl MeshEngine {
             pipelines: vec![instanced_pipeline, normal_pipeline],
             uniform_buffers: vec![camera_uniform],
             storage_buffers: vec![light_data],
-            frames_draw_calls : 0,
         }
     }
 
@@ -95,15 +93,14 @@ impl MeshEngine {
 
     pub fn render(
         &mut self, 
-        view: &wgpu::TextureView, 
-        depth_texture_view : &wgpu::TextureView, 
+        view : &wgpu::TextureView,
+        depth_texture: &wgpu::TextureView,
         encoder: &mut wgpu::CommandEncoder, 
-        entity_data : &entity_data::EntityData
+        entity_data : &entity_data::EntityData, 
+        stats : &mut EngineStats
     ) {
-        self.frames_draw_calls = entity_data.instanced_models.len() + entity_data.models.len();
-
         {
-            let mut rpass = builders::pipeline_builder::create_render_pass(view, depth_texture_view, encoder, BACKGROUND_COLOR);
+            let mut rpass = builders::pipeline_builder::create_render_pass(view, depth_texture, encoder, BACKGROUND_COLOR);
 
             let mut bind_index_offset = 0;
             rpass.set_pipeline(&self.pipelines[0]);
@@ -134,8 +131,13 @@ impl MeshEngine {
             for i in 0..entity_data.models.len() {
                 rpass.draw_model((bind_index_offset + i) as u32, &entity_data.models[i]);
             }
-
         }
+
+        stats.frames_draw_calls = entity_data.instanced_models.len() + entity_data.models.len();
+        stats.bytes_to_gpu += self.uniform_buffers.len() * self.uniform_buffers[0].buffers.len() * self.uniform_buffers[0].buffers[0].1 as usize;
+        stats.bytes_to_gpu += self.storage_buffers.len() * self.storage_buffers[0].buffers.len() * self.storage_buffers[0].buffers[0].1 as usize;
+        stats.bytes_to_gpu += entity_data.instanced_models.len() * entity_data.instanced_models[0].material_buffer.buffers.len() * entity_data.instanced_models[0].material_buffer.buffers[0].1 as usize;
+        stats.bytes_to_gpu += entity_data.models.len() * entity_data.models[0].material_buffer.buffers.len() * std::mem::size_of::<[f32; 4]>() * 4 as usize;
     }
 }
  

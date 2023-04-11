@@ -1,7 +1,7 @@
 use cgmath::{Vector3, InnerSpace, SquareMatrix};
 use winit::event::VirtualKeyCode;
 
-use crate::engine::{models::{standard_model::{self, StandardModel}}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::third_person_camera::ThirdPersonCamera};
+use crate::engine::{models::standard_model::{self, StandardModel}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::third_person_camera::ThirdPersonCamera};
 
 mod aesthetics;
 
@@ -26,9 +26,10 @@ const IDENTITY_MATRIX : [[f32; 4]; 4] = [
 
 impl Player {
     pub fn new(engine : &EngineData) -> Self {
+        let model = "assets/clown_fish.obj"; 
         let mut fish = StandardModel::new(
             &engine.get_device(), 
-            "assets/dory.obj", 
+            model, 
         ).expect("Failed to create OBJ model");
 
         let window_size = engine.get_window_size();
@@ -49,7 +50,7 @@ impl Player {
             position : Vector3::new(0.0, 0.0, 0.0),
             momentum: Vector3::new(0.0, 0.0, 0.0),
 
-            aesthetics : aesthetics::PlayerAestheticsParams::new(),
+            aesthetics : aesthetics::PlayerAestheticsParams::new(model.to_string()),
         }
     }
 

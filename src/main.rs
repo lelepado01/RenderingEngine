@@ -17,7 +17,7 @@ fn main() {
     
     let mut player = game::player::Player::new(&engine);
 
-    let light = LightData::new([300.0, 5.0, 300.0]);
+    let light = LightData::new([0.0, 15.0, 0.0]);
 
     let mut poss = Vec::<[f32; 5]>::new();
     

@@ -12,11 +12,17 @@ pub struct LightData {
 impl LightData {
     pub fn new(pos : [f32; 3]) -> Self {
 
+        // Self {
+        //     position : pos,
+        //     ambient : [0.2, 0.2, 0.3],
+        //     diffuse : [0.1, 0.1, 0.2],
+        //     specular : [0.1, 0.1, 0.2],
+        // }
         Self {
             position : pos,
-            ambient : [0.2, 0.2, 0.3],
-            diffuse : [0.1, 0.1, 0.2],
-            specular : [0.1, 0.1, 0.2],
+            ambient : [1.0, 1.0, 1.0],
+            diffuse : [1.0, 1.0, 1.0],
+            specular : [1.0, 1.0, 1.0],
         }
     }
 

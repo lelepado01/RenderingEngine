@@ -4,18 +4,9 @@ use crate::engine::buffers::material_buffer::{MaterialBuffer, SetMaterialBuffer}
 use super::{mesh::Mesh, standard_model::StandardModel, instanced_model::InstancedModel};
 
 pub trait DrawModel<'a> {
-    fn draw_mesh(&mut self, 
-        bind_group_index: u32, 
-        mesh: &'a Mesh, 
-        material_buffer: &'a MaterialBuffer
-    );
-
+    fn draw_mesh(&mut self, bind_group_index: u32, mesh: &'a Mesh, material_buffer: &'a MaterialBuffer);
     fn draw_model(&mut self, bind_group_index: u32, model: &'a StandardModel);
-    fn draw_model_instanced(
-        &mut self,
-        bind_group_index: u32,
-        model: &'a InstancedModel,
-    ); 
+    fn draw_model_instanced(&mut self,bind_group_index: u32,model: &'a InstancedModel); 
 }
 
 impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>

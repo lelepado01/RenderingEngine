@@ -132,8 +132,9 @@ impl MeshEngine {
                 rpass.draw_model((bind_index_offset + i) as u32, &entity_data.models[i]);
             }
         }
-
-        stats.frames_draw_calls = entity_data.instanced_models.len() + entity_data.models.len();
+        
+        let models_calls = entity_data.models.iter().fold(0, |acc, model| acc + model.meshes.len()); 
+        stats.frames_draw_calls = entity_data.instanced_models.len() + models_calls; 
         stats.bytes_to_gpu += self.uniform_buffers.len() * self.uniform_buffers[0].buffers.len() * self.uniform_buffers[0].buffers[0].1 as usize;
         stats.bytes_to_gpu += self.storage_buffers.len() * self.storage_buffers[0].buffers.len() * self.storage_buffers[0].buffers[0].1 as usize;
         stats.bytes_to_gpu += entity_data.instanced_models.len() * entity_data.instanced_models[0].material_buffer.buffers.len() * entity_data.instanced_models[0].material_buffer.buffers[0].1 as usize;

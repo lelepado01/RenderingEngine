@@ -17,6 +17,18 @@ impl Add for [f32; 4] {
     }
 }
 
+impl Add for [f32; 3] {
+    type Output = [f32; 3];
+
+    fn add(self, rhs: [f32; 3]) -> [f32; 3] {
+        let mut result = [0.0; 3];
+        for i in 0..3 {
+            result[i] = self[i] + rhs[i];
+        }
+        result
+    }
+}
+
 pub trait ScalarDiv {
     type Output;
 

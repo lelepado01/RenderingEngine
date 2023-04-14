@@ -1,4 +1,5 @@
-use engine::{utils, env::light::LightData, models::{vertices::instance_data::PositionInstanceData, instanced_model}};
+use engine::{utils, env::light::LightData};
+use game::tilemap::TileMap;
 use imgui::*;
 use winit::{
     event::{ElementState, Event, KeyboardInput, WindowEvent},
@@ -19,23 +20,10 @@ fn main() {
 
     let light = LightData::new([0.0, 15.0, 0.0]);
 
-    let mut poss = Vec::<[f32; 5]>::new();
-    
-    for i in 0..300 {
-        for j in 0..300 {
-            let height = (i as f32 * 0.2).sin() * 3.0 * (j as f32 * 0.1).cos() * 3.0;
-            let mat_id : f32 = (i % 3) as f32;
-            poss.push([2.0 * i as f32, height, 2.0* j as f32, 1.0, mat_id]);
-        }
-    }
-    let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: [x[0], x[1], x[2], x[3]], material_index: [x[4], 0.0, 0.0, 0.0] }).collect();
-    let mut model = instanced_model::InstancedModel::new(
-        &engine.get_device(), 
-        "assets/cube.obj", 
-        instances,
-    ); 
+    let mut tilemap = TileMap::new();
+    let tilemodels = tilemap.as_model(&engine);
 
-    let entity_data = EntityData::new(vec![light], vec![&model], vec![&player.model]);
+    let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![&player.model]);
 
     let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &player.camera, &entity_data);
 
@@ -93,22 +81,13 @@ fn main() {
             } => { *control_flow = ControlFlow::Exit; }
             Event::MainEventsCleared => engine.request_redraw(),
             Event::RedrawEventsCleared => {
+                engine.update();
                 let delta_time = engine.delta_time(); 
                 player.update(delta_time, &engine);
-                engine.update();
+                tilemap.update(delta_time, &player.camera, &engine);
 
-                let mut poss = Vec::<[f32; 5]>::new();
-    
-                for i in 0..300 {
-                    for j in 0..300 {
-                        let height = (i as f32 * 0.2 + engine.clock.get_time()).sin() * 3.0 * (j as f32 * 0.1 + engine.clock.get_time() * 0.5).cos() * 3.0;
-                        let material_id = (i % 3) as f32;
-                        poss.push([2.0 * i as f32, height, 2.0* j as f32, 1.0, material_id]);
-                    }
-                }
-                let instances : Vec<PositionInstanceData> = poss.into_iter().map(|x| PositionInstanceData { position: [x[0], x[1], x[2], x[3]], material_index: [x[4], 0.0, 0.0, 0.0] }).collect();
-                model.update_instances(&engine.get_device(), &instances); 
-                let entity_data = EntityData::new(vec![light], vec![&model], vec![&player.model]);
+                let tilemodels = tilemap.as_model(&engine);
+                let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![&player.model]);
 
                 mesh_engine.update(&engine.get_device(), &player.camera, &entity_data); 
 

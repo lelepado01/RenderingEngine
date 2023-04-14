@@ -77,4 +77,8 @@ impl Camera for ThirdPersonCamera {
         let buffer_size = std::mem::size_of::<[f32; 4]>() * camera_data.len();
         UniformBuffer::new(&device, &camera_data, buffer_size as u64)
     }
+
+    fn get_position(&self) -> [f32; 3] {
+        self.position.into()
+    }
 }

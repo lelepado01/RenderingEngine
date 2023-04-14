@@ -1,11 +1,16 @@
-use super::Tile;
 use crate::engine::utils::array_math::Add;
+
+
+pub struct Tile {
+    pub position: [f32; 3],
+    pub material: f32,
+}
 
 pub struct TileChunk {
     pub chunk_coords: [i32; 2],
     pub tiles: Vec<Tile>,
     pub center: [f32; 3],
-    pub size: f32,
+    size: f32,
 }
 
 
@@ -33,4 +38,12 @@ impl TileChunk {
 
         chunk
     }
+}
+
+pub fn to_chunk_coords(pos : [f32; 3], chunk_size : f32) -> [i32; 2] {
+    [(pos[0] / (2.0 * chunk_size)) as i32, (pos[1] / (2.0 * chunk_size)) as i32]
+}
+
+pub fn to_world_coords(chunk_coords : [i32; 2], chunk_size : f32) -> [f32; 3] {
+    [chunk_coords[0] as f32 * 2.0 * chunk_size, 0.0, chunk_coords[1] as f32 * 2.0 * chunk_size]
 }

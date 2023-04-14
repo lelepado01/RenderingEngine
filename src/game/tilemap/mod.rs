@@ -1,17 +1,16 @@
-use crate::engine::{models::{vertices::instance_data::PositionInstanceData, instanced_model::{InstancedModel, self}}, engine::EngineData, camera::{self, Camera}};
+use crate::engine::{models::{vertices::instance_data::PositionInstanceData, instanced_model::{InstancedModel, self}}, engine::EngineData};
 mod chunk;
 use chunk::TileChunk;
 
-pub struct Tile {
-    pub position: [f32; 3],
-    pub material: f32,
-}
+use crate::physics::get_distance; 
+use self::chunk::{to_chunk_coords, to_world_coords, Tile};
 
 pub struct TileMap {
     pub tiles: Vec<Tile>,
     pub chunks: Vec<TileChunk>,
     max_distance: f32,
     chunk_size : f32,
+    model: std::option::Option<InstancedModel>,
 }
 
 impl TileMap {
@@ -20,8 +19,9 @@ impl TileMap {
         let mut tilemap= TileMap {
             tiles: Vec::new(),
             chunks: Vec::new(),
-            max_distance: 10000.0,
+            max_distance: 100.0,
             chunk_size: 30.0,
+            model: None,
         };
         
         for i in 0..10 {
@@ -32,32 +32,26 @@ impl TileMap {
         }
 
         tilemap
-
     }
 
-    pub fn update<T>(&mut self, delta_time: f32, camera : &T, engine: &EngineData) 
-        where T: Camera
-    {
-
-        let cam_pos = camera.get_position();
+    pub fn update(&mut self, player_position : &[f32; 3]) {
 
         // remove chunks that are too far away
-        self.chunks.retain(|x| {
-            let dist = (x.center[0] - cam_pos[0]).powf(2.0) + (x.center[2] - cam_pos[2]).powf(2.0);
-            dist < self.max_distance
+        self.chunks.retain(|x| { 
+            get_distance(&x.center, player_position) < self.max_distance 
         });
 
-        let cam_chunk_pos = [(cam_pos[0] / (2.0 * self.chunk_size)) as i32, (cam_pos[2] / (2.0 * self.chunk_size)) as i32];
+        let cam_chunk_pos = to_chunk_coords(*player_position, self.chunk_size); 
 
         for i in cam_chunk_pos[0]..(cam_chunk_pos[0]+10) {
             for j in cam_chunk_pos[1]..(cam_chunk_pos[1]+10) {
-                let chunk_pos = [i as f32 * 2.0 * self.chunk_size, 0.0, j as f32 * 2.0 * self.chunk_size];
-
+                
                 if self.chunks.iter().any(|x| x.chunk_coords == [i, j]) {
                     continue;
                 }
-
-                let dist = (chunk_pos[0] - cam_pos[0]).powf(2.0) + (chunk_pos[2] - cam_pos[2]).powf(2.0);
+                
+                let chunk_pos = to_world_coords([i, j], 30.0); 
+                let dist = get_distance(&chunk_pos, player_position);
                 if dist < self.max_distance {
                     let chunk = TileChunk::new(i, j, self.chunk_size, chunk_pos);
                     self.chunks.push(chunk);
@@ -67,7 +61,7 @@ impl TileMap {
 
     }
 
-    pub fn as_model(&self, engine: &EngineData) -> InstancedModel {
+    pub fn as_model(&mut self, engine: &EngineData) -> &InstancedModel {
 
         let instances : Vec<PositionInstanceData> = self.chunks
             .iter()
@@ -80,12 +74,16 @@ impl TileMap {
             .flatten()
             .collect(); 
 
-        let model = instanced_model::InstancedModel::new(
-            &engine.get_device(), 
-            "assets/cube.obj", 
-            instances,
-        ); 
+        if self.model.is_some() {
+            self.model.as_mut().unwrap().update_instances(&engine.get_device(), &instances);
+        } else {
+            self.model = Some(instanced_model::InstancedModel::new(
+                &engine.get_device(), 
+                "assets/cube.obj", 
+                instances,
+            )); 
+        }
 
-        model
+        self.model.as_ref().unwrap()
     }
 }

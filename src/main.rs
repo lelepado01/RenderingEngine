@@ -9,6 +9,7 @@ use crate::engine::entity_data::EntityData;
 
 mod engine;
 mod game; 
+mod physics;
 
 fn main() {
     env_logger::init();
@@ -84,7 +85,7 @@ fn main() {
                 engine.update();
                 let delta_time = engine.delta_time(); 
                 player.update(delta_time, &engine);
-                tilemap.update(delta_time, &player.camera, &engine);
+                tilemap.update(&player.position.into());
 
                 let tilemodels = tilemap.as_model(&engine);
                 let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![&player.model]);

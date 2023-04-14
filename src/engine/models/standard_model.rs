@@ -66,5 +66,4 @@ impl StandardModel {
             buffer.update(device, 0, data, size);
         }
     }
-
 }

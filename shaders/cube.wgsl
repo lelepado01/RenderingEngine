@@ -18,6 +18,7 @@ var<storage, read_write> light_data: array<Light>;
 var<storage, read_write> materials : array<UnTexturedMaterial>;
 #include "light_utils.wgsl"; 
 
+
 @vertex
 fn vs_main(
     vertex_input: InstancedVertexInput,

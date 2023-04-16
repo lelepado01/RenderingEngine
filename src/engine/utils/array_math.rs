@@ -46,3 +46,21 @@ impl ScalarDiv for [f32; 4] {
         result
     }
 }
+
+pub trait ScalarMul {
+    type Output;
+
+    fn scalar_mul(self, rhs: f32) -> Self::Output;
+}
+
+impl ScalarMul for [f32; 3] {
+    type Output = [f32; 3];
+
+    fn scalar_mul(self, rhs: f32) -> [f32; 3] {
+        let mut result = [0.0; 3];
+        for i in 0..3 {
+            result[i] = self[i] * rhs;
+        }
+        result
+    }
+}

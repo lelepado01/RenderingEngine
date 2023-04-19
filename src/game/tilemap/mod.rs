@@ -1,14 +1,20 @@
-use crate::engine::{models::{vertices::instance_data::PositionInstanceData, instanced_model::{InstancedModel, self}}, engine::EngineData, utils::array_math::ScalarMul};
 mod chunk;
-use chunk::TileChunk;
-use tiff::decoder::{DecodingBuffer, Limits, DecodingResult};
-use noise::{NoiseFn, Perlin, OpenSimplex, utils::PlaneMapBuilder, Fbm};
+mod tile;
 
+use crate::engine::{models::{vertices::instance_data::PositionInstanceData, instanced_model::{InstancedModel, self}}, engine::EngineData, utils::array_math::ScalarMul};
 use crate::physics::get_distance; 
+
+use tiff::decoder::{DecodingBuffer, Limits, DecodingResult};
+use noise::{OpenSimplex, utils::PlaneMapBuilder, Fbm};
+use noise::utils::NoiseMapBuilder;
 use image::GenericImageView;
 
+const MAP_SIZE_X : usize = 5400;
+const MAP_SIZE_Y : usize = 2700;
+const MAP_HEIGHT : f32 = 250.0;
+
 pub struct TileMap {
-    pub chunks: Vec<TileChunk>,
+    pub chunks: Vec<chunk::TileChunk>,
     max_distance: f32,
     chunks_in_view : i32,
     chunk_size : f32,
@@ -16,7 +22,6 @@ pub struct TileMap {
     model: std::option::Option<InstancedModel>,
 
     height_map: DecodingResult,
-    noise: OpenSimplex,
     image: image::DynamicImage,
 }
 
@@ -29,19 +34,19 @@ impl TileMap {
             .unwrap()
             .with_limits(Limits::default()); 
 
-        let noise: OpenSimplex = OpenSimplex::new(1);
-        let fbm = Fbm::<OpenSimplex>::new(0);
-
-        use noise::utils::NoiseMapBuilder;
-        PlaneMapBuilder::<_, 2>::new(&fbm)
-          .set_size(1000, 1000)
-          .set_x_bounds(-5.0, 5.0)
-          .set_y_bounds(-5.0, 5.0)
-          .build()
-        .write_to_file("../assets/material_noise_map.png");  
+        // if image already exists, don't recreate it
+        if !std::path::Path::new("assets/material_noise_map.png").exists(){
+            println!("Generating material noise map");
+            let fbm = Fbm::<OpenSimplex>::new(0);
+            PlaneMapBuilder::<_, 2>::new(&fbm)
+              .set_size(MAP_SIZE_X, MAP_SIZE_Y)
+              .set_x_bounds(-5.0, 5.0)
+              .set_y_bounds(-5.0, 5.0)
+              .build()
+            .write_to_file("../assets/material_noise_map.png");  
+        }
 
         let image = image::open("assets/material_noise_map.png").expect("Failed to load image");
-
         
         let mut tilemap= TileMap {
             chunks: Vec::new(),
@@ -51,7 +56,6 @@ impl TileMap {
             tile_size: 2.0,
             model: None,
             height_map: decoder.read_image().unwrap(),
-            noise,
             image,
         };
 
@@ -59,7 +63,7 @@ impl TileMap {
         
         for i in tilemap.get_chunks_in_view(0) {
             for j in tilemap.get_chunks_in_view(0) {
-                let chunk = TileChunk::new(i, j, &mut tilemap);
+                let chunk = chunk::TileChunk::new(i, j, &mut tilemap);
                 tilemap.chunks.push(chunk);
             }
         }
@@ -87,7 +91,7 @@ impl TileMap {
                 let chunk_pos = self.to_world_coords([i, j]); 
                 let dist = get_distance(&chunk_pos, &scaled_pp);
                 if dist < self.max_distance {
-                    let chunk = TileChunk::new(i, j, self);
+                    let chunk = chunk::TileChunk::new(i, j, self);
                     self.chunks.push(chunk);
                 }
             }
@@ -138,7 +142,7 @@ impl TileMap {
 
     pub fn map_height_function(&mut self, x : f32, y : f32) -> f32 {
         // let x_dim  = 5400; 
-        let y_dim = 2700; 
+        let y_dim = MAP_SIZE_Y; 
         let val = match &self.height_map.as_buffer(0) {
             DecodingBuffer::U8(m) => m[(x as usize) + (y as usize) * y_dim] as f32,// / 255.0,
             DecodingBuffer::U16(m) => m[(x as usize) + (y as usize) * y_dim] as f32,// / 65535.0,
@@ -152,19 +156,28 @@ impl TileMap {
             DecodingBuffer::F64(m) => m[(x as usize) + (y as usize) * y_dim] as f32,
         }; 
 
-        ((val -2961.0) / 54606.0 ) * 250.0
+        ((val -2961.0) / 54606.0 ) * MAP_HEIGHT
     }
 
-    pub fn map_color_function(&self, x : f32, y : f32, z : f32) -> f32 {
+    pub fn map_color_function(&self, x : f32, y : f32, height : f32) -> f32 {
 
+        if x < 0.0 || x > MAP_SIZE_X as f32 || y < 0.0 || y > MAP_SIZE_Y as f32 {
+            return 0.0;
+        }
+        
         let pixel = self.image.get_pixel(x as u32, y as u32);
         let r = pixel[0] as f32 / 255.0;
 
-        if r < 0.1 {
+        let height_contribution = height / MAP_HEIGHT;
+
+        let height_perc = 0.8; 
+        let r = r * (1.0 - height_perc) + height_contribution * height_perc;
+
+        if r < 0.4 {
             return 0.0;
-        } else if r < 0.2 {
+        } else if r < 0.5 {
             return 1.0;
-        } else if r < 0.3 {
+        } else if r < 0.6 {
             return 2.0;
         } else {
             return 3.0;

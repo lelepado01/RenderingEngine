@@ -1,11 +1,6 @@
 use crate::engine::utils::array_math::Add;
 
-use super::TileMap;
-
-pub struct Tile {
-    pub position: [f32; 3],
-    pub material: f32,
-}
+use super::{TileMap, tile::Tile};
 
 pub struct TileChunk {
     pub chunk_coords: [i32; 2],
@@ -13,7 +8,6 @@ pub struct TileChunk {
     pub center: [f32; 3],
     size: f32,
 }
-
 
 impl TileChunk {
     pub fn new(x : i32, y : i32, tilemap : &mut TileMap) -> Self {
@@ -37,7 +31,7 @@ impl TileChunk {
                 let z = start_pos[2] + j as f32 * tilemap.tile_size;
 
                 let height = tilemap.map_height_function(x, z);
-                let mat_id : f32 = tilemap.map_color_function(x, height, z);
+                let mat_id : f32 = tilemap.map_color_function(x, z, height);
                 chunk.tiles.push(Tile { position: [x, height, z], material: mat_id });
             }
         }

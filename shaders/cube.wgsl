@@ -24,10 +24,18 @@ fn vs_main(
     vertex_input: InstancedVertexInput,
     instance_input: InstanceInput,
 ) -> TerrainVertexOutput {
+
+    let model_matrix = mat4x4<f32>(
+        vec4<f32>(1.0, 0.0, 0.0, 0.0),
+        vec4<f32>(0.0, 10.0, 0.0, 0.0),
+        vec4<f32>(0.0, 0.0, 1.0, 0.0),
+        vec4<f32>(0.0, 0.0, 0.0, 1.0)
+    );
+
     var out: TerrainVertexOutput;
     out.normal = vertex_input.normal.xyz;
     out.tex_coords = vertex_input.tex_coords;
-    out.position = camera_data.transform * (vertex_input.v_position + instance_input.i_position);
+    out.position = camera_data.transform * (model_matrix * vertex_input.v_position + instance_input.i_position);
     out.original_position = vertex_input.v_position.xyz + instance_input.i_position.xyz;
     out.material_id = instance_input.instance_material_id.x;
     return out;

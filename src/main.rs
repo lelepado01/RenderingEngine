@@ -82,6 +82,10 @@ fn main() {
             } => { *control_flow = ControlFlow::Exit; }
             Event::MainEventsCleared => engine.request_redraw(),
             Event::RedrawEventsCleared => {
+                if engine.get_key_pressed(winit::event::VirtualKeyCode::Q) {
+                    *control_flow = ControlFlow::Exit;
+                }
+                
                 engine.update();
                 let delta_time = engine.delta_time(); 
                 player.update(delta_time, &engine);
@@ -107,7 +111,7 @@ fn main() {
                         ui.text(format!("Draw Calls: {}", engine.engine_stats.frames_draw_calls));
                         ui.text(format!("Bytes to GPU: {}", engine.engine_stats.bytes_to_gpu));
 
-                        if ui.button("Quit") {
+                        if ui.button("Quit"){
                             *control_flow = ControlFlow::Exit;
                         }
 

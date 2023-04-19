@@ -15,7 +15,7 @@ pub struct Player {
     pub aesthetics : aesthetics::PlayerAestheticsParams,
 }
 
-const SPEED : f32 = 10.0; 
+const SPEED : f32 = 50.0; 
 
 const IDENTITY_MATRIX : [[f32; 4]; 4] = [
     [1.0, 0.0, 0.0, 0.0],

@@ -20,6 +20,8 @@ futures-intrusive = "*"
 radians="*"
 tobj="*"
 anyhow="*"
+tiff="*"
+noise = { version = "0.8.2", features = ["images"] }
 
 [dependencies.image]
 version = "0.24"

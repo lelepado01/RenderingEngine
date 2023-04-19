@@ -1,13 +1,9 @@
 mod chunk;
 mod tile;
+mod aesthetics;
 
 use crate::engine::{models::{vertices::instance_data::PositionInstanceData, instanced_model::{InstancedModel, self}}, engine::EngineData, utils::array_math::ScalarMul};
 use crate::physics::get_distance; 
-
-use tiff::decoder::{DecodingBuffer, Limits, DecodingResult};
-use noise::{OpenSimplex, utils::PlaneMapBuilder, Fbm};
-use noise::utils::NoiseMapBuilder;
-use image::GenericImageView;
 
 const MAP_SIZE_X : usize = 5400;
 const MAP_SIZE_Y : usize = 2700;
@@ -21,33 +17,11 @@ pub struct TileMap {
     tile_size : f32,
     model: std::option::Option<InstancedModel>,
 
-    height_map: DecodingResult,
-    image: image::DynamicImage,
+    aesthetics: aesthetics::MapAestheticsParams,
 }
 
 impl TileMap {
     pub fn new() -> Self {
-
-        let mut decoder = tiff::decoder::Decoder::new(
-            std::fs::File::open("assets/heightmap.tif").unwrap()
-        )
-            .unwrap()
-            .with_limits(Limits::default()); 
-
-        // if image already exists, don't recreate it
-        if !std::path::Path::new("assets/material_noise_map.png").exists(){
-            println!("Generating material noise map");
-            let fbm = Fbm::<OpenSimplex>::new(0);
-            PlaneMapBuilder::<_, 2>::new(&fbm)
-              .set_size(MAP_SIZE_X, MAP_SIZE_Y)
-              .set_x_bounds(-5.0, 5.0)
-              .set_y_bounds(-5.0, 5.0)
-              .build()
-            .write_to_file("../assets/material_noise_map.png");  
-        }
-
-        let image = image::open("assets/material_noise_map.png").expect("Failed to load image");
-        
         let mut tilemap= TileMap {
             chunks: Vec::new(),
             max_distance: 0.0,
@@ -55,8 +29,7 @@ impl TileMap {
             chunk_size: 30.0,
             tile_size: 2.0,
             model: None,
-            height_map: decoder.read_image().unwrap(),
-            image,
+            aesthetics: aesthetics::MapAestheticsParams::new(),
         };
 
         tilemap.max_distance = tilemap.chunks_in_view as f32 * tilemap.chunk_size * tilemap.tile_size;
@@ -141,37 +114,12 @@ impl TileMap {
     }
 
     pub fn map_height_function(&mut self, x : f32, y : f32) -> f32 {
-        // let x_dim  = 5400; 
-        let y_dim = MAP_SIZE_Y; 
-        let val = match &self.height_map.as_buffer(0) {
-            DecodingBuffer::U8(m) => m[(x as usize) + (y as usize) * y_dim] as f32,// / 255.0,
-            DecodingBuffer::U16(m) => m[(x as usize) + (y as usize) * y_dim] as f32,// / 65535.0,
-            DecodingBuffer::U32(m) => m[(x as usize) + (y as usize) * y_dim] as f32,// / 4294967295.0,
-            DecodingBuffer::U64(m) => m[(x as usize) + (y as usize) * y_dim] as f32,// / 18446744073709551615.0,
-            DecodingBuffer::I8(m) => m[(x as usize) + (y as usize) * y_dim] as f32,// / 127.0,
-            DecodingBuffer::I16(m) => m[(x as usize) + (y as usize) * y_dim] as f32,// / 32767.0,
-            DecodingBuffer::I32(m) => m[(x as usize) + (y as usize) * y_dim] as f32, //  / 2147483647.0,
-            DecodingBuffer::I64(m) => m[(x as usize) + (y as usize) * y_dim] as f32, // / 9223372036854775807.0,
-            DecodingBuffer::F32(m) => m[(x as usize) + (y as usize) * y_dim],
-            DecodingBuffer::F64(m) => m[(x as usize) + (y as usize) * y_dim] as f32,
-        }; 
-
-        ((val -2961.0) / 54606.0 ) * MAP_HEIGHT
+        self.aesthetics.get_height_from(x, y)
     }
 
     pub fn map_color_function(&self, x : f32, y : f32, height : f32) -> f32 {
 
-        if x < 0.0 || x > MAP_SIZE_X as f32 || y < 0.0 || y > MAP_SIZE_Y as f32 {
-            return 0.0;
-        }
-        
-        let pixel = self.image.get_pixel(x as u32, y as u32);
-        let r = pixel[0] as f32 / 255.0;
-
-        let height_contribution = height / MAP_HEIGHT;
-
-        let height_perc = 0.8; 
-        let r = r * (1.0 - height_perc) + height_contribution * height_perc;
+        let r = self.aesthetics.get_material_from(x, y, height); 
 
         if r < 0.4 {
             return 0.0;

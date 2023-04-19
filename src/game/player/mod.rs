@@ -33,7 +33,7 @@ impl Player {
         ).expect("Failed to create OBJ model");
 
         let window_size = engine.get_window_size();
-        let camera = ThirdPersonCamera::new([0.0, 30.0, 0.0], window_size.0 as f32 / window_size.1 as f32);
+        let camera = ThirdPersonCamera::new([0.0, 150.0, 0.0], window_size.0 as f32 / window_size.1 as f32);
 
         let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * IDENTITY_MATRIX.len() as wgpu::BufferAddress;
         let buffer = UniformBuffer::new(
@@ -47,7 +47,7 @@ impl Player {
             model : fish,
             camera,
 
-            position : Vector3::new(0.0, 0.0, 0.0),
+            position : Vector3::new(0.0, 100.0, 0.0),
             momentum: Vector3::new(0.0, 0.0, 0.0),
 
             aesthetics : aesthetics::PlayerAestheticsParams::new(model.to_string()),

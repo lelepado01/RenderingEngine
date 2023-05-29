@@ -16,6 +16,7 @@ pub struct ThirdPersonCamera {
     pitch : f32,
 }
 
+#[allow(dead_code)]
 impl ThirdPersonCamera {
 
     pub fn new(start_pos : [f32; 3], aspect_ratio : f32) -> Self {

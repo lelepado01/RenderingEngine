@@ -7,6 +7,7 @@ pub struct MaterialBuffer {
     pub buffers : Vec<StorageBuffer>,
 }
 
+#[allow(dead_code)]
 impl MaterialBuffer {
     
     pub fn new(device: &wgpu::Device, materials: &Vec<UnTexturedMaterial>) -> Self {

@@ -5,6 +5,7 @@ pub mod instanced_vertex;
 pub mod instance_data;
 pub mod standard_vertex;
 
+#[allow(dead_code)]
 pub enum VertexType {
     InstancedVertex,
     StandardVertex,

@@ -8,6 +8,7 @@ pub struct StandardModel {
     pub uniform_buffer : std::option::Option<UniformBuffer>,
 }
 
+#[allow(dead_code)]
 impl StandardModel {
     pub fn new(
         device: &wgpu::Device,

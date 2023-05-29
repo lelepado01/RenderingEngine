@@ -4,7 +4,6 @@ use super::camera::Camera;
 use super::entity_data;
 use super::env::light::Bufferable;
 use super::models::vertices::instance_data::{PositionInstanceData};
-use super::models::vertices::standard_vertex::StandardModelVertex;
 use super::models::vertices::{VertexData, VertexType};
 use super::models::vertices::instanced_vertex::InstancedModelVertex;
 use super::stats::EngineStats;
@@ -51,27 +50,6 @@ impl MeshEngine {
             .set_pipeline_layout(pipeline_layout)
             .build(device);
 
-        // let mut pipeline_layout_builder = PipelineLayoutBuilder::new()
-        //     .add_bind_group_layout(&camera_uniform.bind_group_layout)
-        //     .add_bind_group_layout(&light_data.bind_group_layout);
-
-        // for model in &entity_data.models {
-        //     if model.uniform_buffer.is_some() {
-        //         pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.uniform_buffer.as_ref().unwrap().bind_group_layout);
-        //     }
-        //     pipeline_layout_builder = pipeline_layout_builder.add_bind_group_layout(&model.material_buffer.buffers[0].bind_group_layout);
-        // }
-        // let normal_pipeline_layout = pipeline_layout_builder.build(device);
-        
-        // let normal_pipeline = PipelineBuilder::new()
-        //     .add_vertex_buffer_layout(StandardModelVertex::desc())
-        //     .set_primitive_state(Some(wgpu::Face::Back))
-        //     .set_wireframe_mode(false)  
-        //     .set_vertex_shader(device, "./shaders/fish.wgsl", VertexType::StandardVertex)
-        //     .set_fragment_shader(device, "./shaders/fish.wgsl", &config.format)
-        //     .set_pipeline_layout(normal_pipeline_layout)
-        //     .build(device);
-
         MeshEngine {
             instanced_pipeline,
             uniform_buffers: vec![camera_uniform],
@@ -115,30 +93,18 @@ impl MeshEngine {
             for i in 0..entity_data.instanced_models.len() {
                 rpass.draw_model_instanced((bind_index_offset + i) as u32, &entity_data.instanced_models[i]);
             }
-            
-            // bind_index_offset = 0;
-            // rpass.set_pipeline(&self.pipelines[1]);
-            // for i in 0..self.uniform_buffers.len() {
-            //     rpass.set_uniform_buffer(i as u32, &self.uniform_buffers[i]);
-            // }
-            // bind_index_offset += self.uniform_buffers.len();
-            // for i in 0..self.storage_buffers.len() {
-            //     rpass.set_storage_buffer((bind_index_offset + i) as u32, &self.storage_buffers[i]);
-            // }
-            // bind_index_offset += self.storage_buffers.len();
-            // rpass.set_uniform_buffer(bind_index_offset as u32, entity_data.models[0].uniform_buffer.as_ref().unwrap()); 
-            // bind_index_offset += 1;
-            // for i in 0..entity_data.models.len() {
-            //     rpass.draw_model((bind_index_offset + i) as u32, &entity_data.models[i]);
-            // }
         }
         
         let models_calls = entity_data.models.iter().fold(0, |acc, model| acc + model.meshes.len()); 
         stats.frames_draw_calls = entity_data.instanced_models.len() + models_calls; 
-        stats.bytes_to_gpu += self.uniform_buffers.len() * self.uniform_buffers[0].buffers.len() * self.uniform_buffers[0].buffers[0].1 as usize;
-        stats.bytes_to_gpu += self.storage_buffers.len() * self.storage_buffers[0].buffers.len() * self.storage_buffers[0].buffers[0].1 as usize;
-        stats.bytes_to_gpu += entity_data.instanced_models.len() * entity_data.instanced_models[0].material_buffer.buffers.len() * entity_data.instanced_models[0].material_buffer.buffers[0].1 as usize;
-        // stats.bytes_to_gpu += entity_data.models.len() * entity_data.models[0].material_buffer.buffers.len() * std::mem::size_of::<[f32; 4]>() * 4 as usize;
+        if entity_data.instanced_models.len() > 0 {
+            stats.bytes_to_gpu += self.uniform_buffers.len() * self.uniform_buffers[0].buffers.len() * self.uniform_buffers[0].buffers[0].1 as usize;
+            stats.bytes_to_gpu += self.storage_buffers.len() * self.storage_buffers[0].buffers.len() * self.storage_buffers[0].buffers[0].1 as usize;
+            stats.bytes_to_gpu += entity_data.instanced_models.len() * entity_data.instanced_models[0].material_buffer.buffers.len() * entity_data.instanced_models[0].material_buffer.buffers[0].1 as usize;
+        }
+        if entity_data.models.len() > 0 {
+            stats.bytes_to_gpu += entity_data.models.len() * entity_data.models[0].material_buffer.buffers.len() * std::mem::size_of::<[f32; 4]>() * 4 as usize;
+        }
     }
 }
  

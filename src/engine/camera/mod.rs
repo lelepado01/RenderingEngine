@@ -1,7 +1,6 @@
 
 use super::buffers::uniform_buffer::UniformBuffer;
 
-
 pub mod fps_camera; 
 pub mod third_person_camera;
 

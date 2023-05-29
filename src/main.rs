@@ -17,7 +17,7 @@ fn main() {
     let event_loop = EventLoop::new();
     let mut engine = engine::engine::EngineData::new(&event_loop);
     
-    let mut player = game::player::Player::new(&engine);
+    let mut camera = engine::camera::fps_camera::FpsCamera::new([0.0, 150.0, 0.0], engine.get_window_size().0 as f32 / engine.get_window_size().1 as f32);
 
     let light = LightData::new([0.0, 15.0, 0.0]);
 
@@ -26,7 +26,7 @@ fn main() {
 
     let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![]);
 
-    let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &player.camera, &entity_data);
+    let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &camera, &entity_data);
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = utils::get_control_flow_status();
@@ -41,7 +41,7 @@ fn main() {
                 let (new_x, new_y) : (f32, f32) = position.into();
                 let (old_x, old_y) = engine.get_mouse_position();                
                 engine.set_mouse_position(position.into());
-                player.camera.update_rotation(new_x - old_x, new_y - old_y);
+                camera.update_rotation(new_x - old_x, new_y - old_y);
             },
             Event::WindowEvent {
                 event: WindowEvent::Resized(_),
@@ -74,7 +74,7 @@ fn main() {
                 ..
             } => {
                 engine.update_key_state(keycode, false); 
-                player.reset_momentum();
+                camera.reset_momentum();
             }
             | Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
@@ -88,13 +88,14 @@ fn main() {
                 
                 engine.update();
                 let delta_time = engine.delta_time(); 
-                player.update(delta_time, &engine);
-                tilemap.update(&player.position.into());
+                // player.update(delta_time, &engine);
+                camera.update(delta_time, &engine); 
+                tilemap.update(&camera.position.into());
 
                 let tilemodels = tilemap.as_model(&engine);
                 let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![]);
 
-                mesh_engine.update(&engine.get_device(), &player.camera, &entity_data); 
+                mesh_engine.update(&engine.get_device(), &camera, &entity_data); 
 
                 let mut encoder = engine.get_encoder();
                 let ui = engine.imgui_engine.imgui_context.frame();
@@ -115,9 +116,9 @@ fn main() {
                             *control_flow = ControlFlow::Exit;
                         }
 
-                        let mut camera_position : [f32; 3] = player.camera.position.into();
+                        let mut camera_position : [f32; 3] = camera.position.into();
                         ui.input_float3("Camera position", &mut camera_position).build();
-                        let mut camera_rotation : [f32; 3] = player.camera.forward.into();
+                        let mut camera_rotation : [f32; 3] = camera.forward.into();
                         ui.input_float3("Camera rotation", &mut camera_rotation).build();  
                     }
                 );                 

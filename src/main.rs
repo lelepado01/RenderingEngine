@@ -24,7 +24,7 @@ fn main() {
     let mut tilemap = TileMap::new();
     let tilemodels = tilemap.as_model(&engine);
 
-    let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![&player.model]);
+    let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![]);
 
     let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &player.camera, &entity_data);
 
@@ -92,7 +92,7 @@ fn main() {
                 tilemap.update(&player.position.into());
 
                 let tilemodels = tilemap.as_model(&engine);
-                let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![&player.model]);
+                let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![]);
 
                 mesh_engine.update(&engine.get_device(), &player.camera, &entity_data); 
 

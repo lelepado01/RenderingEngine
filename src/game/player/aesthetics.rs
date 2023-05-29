@@ -3,7 +3,6 @@ use cgmath::{Rad, Vector3, VectorSpace};
 use crate::engine::engine::EngineData;
 
 
-
 pub struct PlayerAestheticsParams {
     y_fluctuation : f32,
     old_momentum : Vector3<f32>,

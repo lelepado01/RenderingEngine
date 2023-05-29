@@ -4,6 +4,9 @@ use crate::engine::{engine::EngineData, buffers::uniform_buffer::UniformBuffer, 
 
 use super::{OPENGL_TO_WGPU_MATRIX, Camera};
 
+pub const DISTANCE_PLAYER_CAMERA : f32 = 15.0; 
+pub const SENSITIVITY:f32 = 0.1; 
+
 pub struct ThirdPersonCamera {
     pub position : Vector3<f32>,
     pub forward : Vector3<f32>,
@@ -12,10 +15,6 @@ pub struct ThirdPersonCamera {
     yaw : f32,
     pitch : f32,
 }
-
-const DISTANCE_PLAYER_CAMERA : f32 = 15.0; 
-const SENSITIVITY:f32 = 0.1; 
-
 
 impl ThirdPersonCamera {
 

@@ -1,18 +1,18 @@
 use cgmath::{Vector3, InnerSpace, SquareMatrix};
 use winit::event::VirtualKeyCode;
 
-use crate::engine::{models::standard_model::{self, StandardModel}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::third_person_camera::ThirdPersonCamera};
+use crate::engine::{models::standard_model::{self, StandardModel}, engine::EngineData, buffers::uniform_buffer::UniformBuffer, camera::{third_person_camera::ThirdPersonCamera, fps_camera::FpsCamera}};
 
 mod aesthetics;
 
 pub struct Player {
-    pub model : standard_model::StandardModel,
-    pub camera : ThirdPersonCamera,
+    // pub model : standard_model::StandardModel,
+    pub camera : FpsCamera,
 
     pub position : Vector3<f32>,
     momentum : Vector3<f32>, 
 
-    pub aesthetics : aesthetics::PlayerAestheticsParams,
+    // pub aesthetics : aesthetics::PlayerAestheticsParams,
 }
 
 const SPEED : f32 = 50.0; 
@@ -26,31 +26,31 @@ const IDENTITY_MATRIX : [[f32; 4]; 4] = [
 
 impl Player {
     pub fn new(engine : &EngineData) -> Self {
-        let model = "assets/clown_fish.obj"; 
-        let mut fish = StandardModel::new(
-            &engine.get_device(), 
-            model, 
-        ).expect("Failed to create OBJ model");
+        // let model = "assets/seahorse.obj"; 
+        // let mut fish = StandardModel::new(
+        //     &engine.get_device(), 
+        //     model, 
+        // ).expect("Failed to create OBJ model");
 
         let window_size = engine.get_window_size();
-        let camera = ThirdPersonCamera::new([0.0, 150.0, 0.0], window_size.0 as f32 / window_size.1 as f32);
+        let camera = FpsCamera::new([0.0, 150.0, 0.0], window_size.0 as f32 / window_size.1 as f32);
 
-        let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * IDENTITY_MATRIX.len() as wgpu::BufferAddress;
-        let buffer = UniformBuffer::new(
-            &engine.get_device(),
-            &IDENTITY_MATRIX.into(), 
-            size,
-        );
-        fish.set_uniform_buffer(buffer);
+        // let size: u64 = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * IDENTITY_MATRIX.len() as wgpu::BufferAddress;
+        // let buffer = UniformBuffer::new(
+        //     &engine.get_device(),
+        //     &IDENTITY_MATRIX.into(), 
+        //     size,
+        // );
+        // fish.set_uniform_buffer(buffer);
 
         Player {
-            model : fish,
+            // model : fish,
             camera,
 
             position : Vector3::new(0.0, 100.0, 0.0),
             momentum: Vector3::new(0.0, 0.0, 0.0),
 
-            aesthetics : aesthetics::PlayerAestheticsParams::new(model.to_string()),
+            // aesthetics : aesthetics::PlayerAestheticsParams::new(model.to_string()),
         }
     }
 
@@ -61,14 +61,14 @@ impl Player {
         }
 
         self.position += self.momentum * delta_time;
-        self.aesthetics.update(delta_time, engine, self.momentum);
+        // self.aesthetics.update(delta_time, engine, self.momentum);
 
         self.camera.update_position(self.position); 
         self.camera.update_aspect_ratio(engine);      
 
-        let model_matrix = self.get_model_matrix();
-        let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * model_matrix.len() as wgpu::BufferAddress;
-        self.model.update_uniform_buffer(engine.get_device(), &model_matrix, size);
+        // let model_matrix = self.get_model_matrix();
+        // let size = std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress * model_matrix.len() as wgpu::BufferAddress;
+        // self.model.update_uniform_buffer(engine.get_device(), &model_matrix, size);
     }
 
     pub fn reset_momentum(&mut self) {
@@ -93,22 +93,22 @@ impl Player {
         }
     }
 
-    fn get_model_matrix(&mut self) -> Vec<[f32; 4]> {
-        let mut model_matrix = cgmath::Matrix4::identity();
-        model_matrix = model_matrix * cgmath::Matrix4::from_translation(
-            self.aesthetics.get_aesthetic_position(self.position)
-        );
-        model_matrix = model_matrix * cgmath::Matrix4::from_scale(3.0);
-        model_matrix = model_matrix * cgmath::Matrix4::from_axis_angle(
-            cgmath::Vector3::unit_y(), 
-            self.aesthetics.get_aesthetic_angle()
-        );
+    // fn get_model_matrix(&mut self) -> Vec<[f32; 4]> {
+    //     let mut model_matrix = cgmath::Matrix4::identity();
+    //     model_matrix = model_matrix * cgmath::Matrix4::from_translation(
+    //         self.aesthetics.get_aesthetic_position(self.position)
+    //     );
+    //     model_matrix = model_matrix * cgmath::Matrix4::from_scale(3.0);
+    //     model_matrix = model_matrix * cgmath::Matrix4::from_axis_angle(
+    //         cgmath::Vector3::unit_y(), 
+    //         self.aesthetics.get_aesthetic_angle()
+    //     );
         
-        let mut v = Vec::new(); 
-        let modmat : [[f32; 4]; 4] = model_matrix.into();
-        for m in modmat {
-            v.push(m);
-        }
-        v
-    }
+    //     let mut v = Vec::new(); 
+    //     let modmat : [[f32; 4]; 4] = model_matrix.into();
+    //     for m in modmat {
+    //         v.push(m);
+    //     }
+    //     v
+    // }
 }

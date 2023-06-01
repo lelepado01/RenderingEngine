@@ -1,136 +1,91 @@
-mod chunk;
-mod tile;
-mod aesthetics;
+use bytemuck::{Zeroable, Pod};
 
-use crate::engine::{models::{vertices::instance_data::PositionInstanceData, instanced_model::{InstancedModel, self}}, engine::EngineData, utils::array_math::ScalarMul};
-use crate::physics::get_distance; 
+use crate::engine::{engine::EngineData, models::{instanced_model::{InstancedModel, self}, vertices::VertexData}};
 
-const MAP_SIZE_X : usize = 5400;
-const MAP_SIZE_Y : usize = 2700;
-const MAP_HEIGHT : f32 = 250.0;
 
-pub struct TileMap {
-    pub chunks: Vec<chunk::TileChunk>,
-    max_distance: f32,
-    chunks_in_view : i32,
-    chunk_size : f32,
-    tile_size : f32,
-    model: std::option::Option<InstancedModel>,
-
-    aesthetics: aesthetics::MapAestheticsParams,
+#[repr(C)]
+#[derive(Clone, Copy, Pod, Zeroable, Debug)]
+pub struct MaterialInstanceData {
+    material_index: u32,
 }
 
-impl TileMap {
-    pub fn new() -> Self {
-        let mut tilemap= TileMap {
-            chunks: Vec::new(),
-            max_distance: 0.0,
-            chunks_in_view: 5,
-            chunk_size: 30.0,
-            tile_size: 2.0,
-            model: None,
-            aesthetics: aesthetics::MapAestheticsParams::new(),
-        };
+impl VertexData for MaterialInstanceData {
+    fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
+        wgpu::VertexBufferLayout {
+            array_stride: std::mem::size_of::<MaterialInstanceData>() as wgpu::BufferAddress,
+            step_mode: wgpu::VertexStepMode::Instance,
+            attributes: &[
+                wgpu::VertexAttribute {
+                    offset: 0,
+                    shader_location: 3,
+                    format: wgpu::VertexFormat::Uint32,
+                },
+            ],
+        }
+    }
+}
 
-        tilemap.max_distance = tilemap.chunks_in_view as f32 * tilemap.chunk_size * tilemap.tile_size;
-        
-        for i in tilemap.get_chunks_in_view(0) {
-            for j in tilemap.get_chunks_in_view(0) {
-                let chunk = chunk::TileChunk::new(i, j, &mut tilemap);
-                tilemap.chunks.push(chunk);
+pub struct PositionalTileMap {
+    xsize : u32,
+    ysize : u32,
+    zsize : u32,
+
+    instances : Vec<MaterialInstanceData>,
+    model : Option<InstancedModel>,
+}
+
+
+impl PositionalTileMap {
+    pub fn new() -> Self {
+        let mut m = PositionalTileMap {
+            xsize : 250,
+            ysize : 50,
+            zsize : 250,
+            instances : vec![],
+
+            model : None,
+        }; 
+
+        m.instances = vec![MaterialInstanceData{material_index: 0}; (m.xsize * m.ysize * m.zsize) as usize];
+
+        for i in 0..m.xsize {
+            for j in 0..m.ysize {
+                for k in 0..m.zsize {
+                    let index = m.xyz_to_index(i, j, k);
+                    let material_index = (i) % 2;
+                    m.instances[index as usize] = MaterialInstanceData{material_index: material_index};
+                }
             }
         }
 
-        tilemap
+        m
     }
 
-    pub fn update(&mut self, player_position : &[f32; 3]) {
+    pub fn xyz_to_index(&self, x : u32, y : u32, z : u32) -> u32 {
+        z * self.xsize * self.ysize + y * self.xsize + x
+    }
 
-        let scaled_pp = player_position.scalar_mul(self.tile_size); 
+    #[allow(dead_code)]
+    pub fn index_to_xyz(&self, index : u32) -> (u32, u32, u32) {
+        let x = index / (self.xsize * self.ysize);
+        let y = (index % (self.xsize * self.ysize)) / self.zsize;
+        let z = index % self.zsize;
 
-        self.chunks.retain(|x| { 
-            get_distance(&x.center, &scaled_pp) < self.max_distance 
-        });
-
-        let cam_chunk_pos = self.to_chunk_coords(scaled_pp); 
-
-        for i in self.get_chunks_in_view(cam_chunk_pos[0]) {
-            for j in self.get_chunks_in_view(cam_chunk_pos[1]) {
-                
-                if self.chunks.iter().any(|x| x.chunk_coords == [i, j]) {
-                    continue;
-                }
-                
-                let chunk_pos = self.to_world_coords([i, j]); 
-                let dist = get_distance(&chunk_pos, &scaled_pp);
-                if dist < self.max_distance {
-                    let chunk = chunk::TileChunk::new(i, j, self);
-                    self.chunks.push(chunk);
-                }
-            }
-        }
-
+        (x, y, z)
     }
 
     pub fn as_model(&mut self, engine: &EngineData) -> &InstancedModel {
 
-        let instances : Vec<PositionInstanceData> = self.chunks
-            .iter()
-            .map(|x| 
-                x.tiles
-                    .iter()
-                    .map(|x| PositionInstanceData { position: [x.position[0], x.position[1], x.position[2], 1.0], material_index: [x.material, 0.0, 0.0, 0.0] })
-                    .collect::<Vec<PositionInstanceData>>()
-            )
-            .flatten()
-            .collect(); 
-
         if self.model.is_some() {
-            self.model.as_mut().unwrap().update_instances(&engine.get_device(), &instances);
+            self.model.as_mut().unwrap().update_instances(&engine.get_device(), &self.instances);
         } else {
             self.model = Some(instanced_model::InstancedModel::new(
                 &engine.get_device(), 
                 "assets/cube.obj", 
-                instances,
+                self.instances.clone(),
             )); 
         }
 
         self.model.as_ref().unwrap()
     }
-
-    pub fn to_chunk_coords(&self, pos : [f32; 3]) -> [i32; 2] {
-        [(pos[0] / (self.chunk_size * self.tile_size)) as i32, 
-        (pos[2] / (self.chunk_size * self.tile_size)) as i32]
-    }
-    
-    pub fn to_world_coords(&self, chunk_coords : [i32; 2]) -> [f32; 3] {
-        [chunk_coords[0] as f32 * self.chunk_size * self.tile_size, 
-        0.0, 
-        chunk_coords[1] as f32 * self.chunk_size * self.tile_size]
-    }
-
-    pub fn get_chunks_in_view(&self, pos : i32) -> std::ops::Range<i32> {
-        (pos - self.chunks_in_view)..(pos + self.chunks_in_view)
-    }
-
-    pub fn map_height_function(&mut self, x : f32, y : f32) -> f32 {
-        self.aesthetics.get_height_from(x, y)
-    }
-
-    pub fn map_color_function(&self, x : f32, y : f32, height : f32) -> f32 {
-
-        let r = self.aesthetics.get_material_from(x, y, height); 
-
-        if r < 0.4 {
-            return 0.0;
-        } else if r < 0.5 {
-            return 1.0;
-        } else if r < 0.6 {
-            return 2.0;
-        } else {
-            return 3.0;
-        }
-        
-    }
-
 }

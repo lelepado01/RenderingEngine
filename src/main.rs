@@ -1,5 +1,5 @@
 use engine::{utils, env::light::LightData};
-use game::tilemap::TileMap;
+use game::tilemap::PositionalTileMap;
 use imgui::*;
 use winit::{
     event::{ElementState, Event, KeyboardInput, WindowEvent},
@@ -21,7 +21,7 @@ fn main() {
 
     let light = LightData::new([0.0, 15.0, 0.0]);
 
-    let mut tilemap = TileMap::new();
+    let mut tilemap = PositionalTileMap::new();
     let tilemodels = tilemap.as_model(&engine);
 
     let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![]);
@@ -88,9 +88,8 @@ fn main() {
                 
                 engine.update();
                 let delta_time = engine.delta_time(); 
-                // player.update(delta_time, &engine);
                 camera.update(delta_time, &engine); 
-                tilemap.update(&camera.position.into());
+                //tilemap.update(&camera.position.into());
 
                 let tilemodels = tilemap.as_model(&engine);
                 let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![]);

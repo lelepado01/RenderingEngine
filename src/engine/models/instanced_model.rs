@@ -1,4 +1,4 @@
-use crate::engine::buffers::{self, storage_buffer::{self, StorageBuffer}};
+use crate::{engine::buffers::{self, storage_buffer::{self, StorageBuffer}}};
 use super::{mesh::Mesh, vertices::{VertexData, instanced_vertex::InstancedModelVertex, Parsable, CalculateNormals}, material::{UnTexturedMaterial}};
 
 pub struct InstancedModel {
@@ -86,5 +86,9 @@ impl InstancedModel {
 
         self.instance_buffer = instance_buffer;
         self.instance_count = instances.len() as u32;
+    }
+
+    pub fn get_byte_size<T>(&self) -> usize {
+        self.instance_count as usize * std::mem::size_of::<T>()
     }
 }

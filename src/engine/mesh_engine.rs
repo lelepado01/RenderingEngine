@@ -1,9 +1,9 @@
 use crate::engine::builders::pipeline_layout_builder::PipelineLayoutBuilder;
 use crate::engine::buffers::{uniform_buffer::{UniformBuffer, SetUniformBuffer}, storage_buffer::{StorageBuffer, SetStorageBuffer}};
+use crate::game::tilemap::MaterialInstanceData;
 use super::camera::Camera;
 use super::entity_data;
 use super::env::light::Bufferable;
-use super::models::vertices::instance_data::{PositionInstanceData};
 use super::models::vertices::{VertexData, VertexType};
 use super::models::vertices::instanced_vertex::InstancedModelVertex;
 use super::stats::EngineStats;
@@ -42,11 +42,11 @@ impl MeshEngine {
 
         let instanced_pipeline = PipelineBuilder::new()
             .add_vertex_buffer_layout(InstancedModelVertex::desc())
-            .add_vertex_buffer_layout(PositionInstanceData::desc())
+            .add_vertex_buffer_layout(MaterialInstanceData::desc())
             .set_primitive_state(Some(wgpu::Face::Back))
             .set_wireframe_mode(false)  
-            .set_vertex_shader(device, "./shaders/cube.wgsl", VertexType::InstancedVertex)
-            .set_fragment_shader(device, "./shaders/cube.wgsl", &config.format)
+            .set_vertex_shader(device, "./shaders/positional_tilemap.wgsl", VertexType::InstancedVertex)
+            .set_fragment_shader(device, "./shaders/positional_tilemap.wgsl", &config.format)
             .set_pipeline_layout(pipeline_layout)
             .build(device);
 
@@ -101,6 +101,7 @@ impl MeshEngine {
             stats.bytes_to_gpu += self.uniform_buffers.len() * self.uniform_buffers[0].buffers.len() * self.uniform_buffers[0].buffers[0].1 as usize;
             stats.bytes_to_gpu += self.storage_buffers.len() * self.storage_buffers[0].buffers.len() * self.storage_buffers[0].buffers[0].1 as usize;
             stats.bytes_to_gpu += entity_data.instanced_models.len() * entity_data.instanced_models[0].material_buffer.buffers.len() * entity_data.instanced_models[0].material_buffer.buffers[0].1 as usize;
+            stats.bytes_to_gpu += entity_data.instanced_models.iter().fold(0, |acc, model| acc + model.get_byte_size::<MaterialInstanceData>()); 
         }
         if entity_data.models.len() > 0 {
             stats.bytes_to_gpu += entity_data.models.len() * entity_data.models[0].material_buffer.buffers.len() * std::mem::size_of::<[f32; 4]>() * 4 as usize;

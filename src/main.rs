@@ -1,4 +1,4 @@
-use engine::{utils, env::light::LightData};
+use engine::{utils, env::light::LightData, indirect_engine, models::{indirect_model, vertices::instanced_vertex::InstancedModelVertex}};
 use game::tilemap::PositionalTileMap;
 use imgui::*;
 use winit::{
@@ -24,7 +24,7 @@ fn main() {
     let mut tilemap = PositionalTileMap::new();
     let tilemodels = tilemap.as_model(&engine);
 
-    let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![]);
+    let entity_data = EntityData::new(vec![light], vec![tilemodels], vec![], vec![]);
 
     let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &camera, &entity_data);
 
@@ -89,10 +89,10 @@ fn main() {
                 engine.update();
                 let delta_time = engine.delta_time(); 
                 camera.update(delta_time, &engine); 
-                //tilemap.update(&camera.position.into());
+                // tilemap.update(&camera.position.into());
 
                 let tilemodels = tilemap.as_model(&engine);
-                let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![]);
+                let entity_data = EntityData::new(vec![light], vec![tilemodels], vec![], vec![]);
 
                 mesh_engine.update(&engine.get_device(), &camera, &entity_data); 
 

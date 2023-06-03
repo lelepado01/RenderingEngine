@@ -5,6 +5,10 @@ struct InstancedVertexInput {
     @location(2) tex_coords: vec2<f32>,
 }
 
+struct InstanceInput {
+    @location(3) instance_material_id: u32,
+}
+
 struct TerrainVertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) normal: vec3<f32>,

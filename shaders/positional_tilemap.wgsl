@@ -2,15 +2,7 @@
 #include "materials.wgsl";
 #include "utils.wgsl";
 #include "light.wgsl"; 
-
-struct InstanceInput {
-    @location(3) instance_material_id: u32,
-}
-
-struct CameraData {
-    transform: mat4x4<f32>,
-    position: vec3<f32>,
-};
+#include "camera.wgsl"; 
 
 @group(0) @binding(0)
 var<uniform> camera_data: CameraData;
@@ -57,7 +49,7 @@ fn vs_main(
     out.normal = vertex_input.normal.xyz;
     out.position = camera_data.transform * (model_matrix * vertex_input.v_position + instance_pos);
     out.original_position = vertex_input.v_position.xyz + instance_pos.xyz;
-    out.material_id = f32(get_byte_from_u32(instance_input.instance_material_id, 0u));
+    out.material_id = f32(instance_input.instance_material_id); //get_byte_from_u32(instance_input.instance_material_id, 0u));
 
     return out;
 }
@@ -65,9 +57,9 @@ fn vs_main(
 @fragment
 fn fs_main(in: TerrainVertexOutput) -> @location(0) vec4<f32> {
 
-    // if (in.material_id == 0.0) {
-    //     discard;
-    // }
+    if (in.material_id == 0.0) {
+        discard;
+    }
     
     var result : vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
     for (var i = 0; i < 2; i = i + 1) {

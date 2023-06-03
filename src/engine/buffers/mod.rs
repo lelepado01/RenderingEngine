@@ -12,6 +12,7 @@ pub enum BufferType {
     Uniform,
     Storage,
     Instance,
+    Indirect,
 }
 
 pub fn create_buffer<T>(
@@ -27,6 +28,7 @@ where T : bytemuck::Pod + bytemuck::Zeroable
         BufferType::Uniform => wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         BufferType::Instance => wgpu::BufferUsages::VERTEX,
         BufferType::Storage => wgpu::BufferUsages::STORAGE,
+        BufferType::Indirect => wgpu::BufferUsages::INDIRECT,
     };
     
     device.create_buffer_init(&wgpu::util::BufferInitDescriptor {

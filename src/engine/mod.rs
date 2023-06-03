@@ -13,4 +13,5 @@ pub mod camera;
 pub mod stats;
 
 pub mod mesh_engine; 
+pub mod indirect_engine;
 pub mod compute_engine;

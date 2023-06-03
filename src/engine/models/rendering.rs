@@ -7,7 +7,7 @@ pub trait DrawModel<'a> {
     fn draw_mesh(&mut self, bind_group_index: u32, mesh: &'a Mesh, material_buffer: &'a MaterialBuffer);
     fn draw_model(&mut self, bind_group_index: u32, model: &'a StandardModel);
     fn draw_model_instanced(&mut self,bind_group_index: u32,model: &'a InstancedModel); 
-    fn draw_model_indirect(&mut self,bind_group_index: u32,model: &'a IndirectModel);
+    fn draw_model_indirect(&mut self,model: &'a IndirectModel);
 }
 
 impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>
@@ -43,7 +43,6 @@ impl<'a, 'b> DrawModel<'b> for wgpu::RenderPass<'a>
 
     fn draw_model_indirect(
             &mut self,
-            bind_group_index: u32,
             model: &'a IndirectModel,
     ) {
         for mesh in &model.meshes {

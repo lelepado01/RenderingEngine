@@ -19,6 +19,7 @@ struct IndirectDraw {
     pub base_instance: i32,
 }
 
+#[allow(dead_code)]
 impl IndirectModel {
     pub fn new<T>(
         device: &wgpu::Device,

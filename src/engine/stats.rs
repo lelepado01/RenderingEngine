@@ -4,6 +4,8 @@ pub struct EngineStats {
     pub frames_render_time : f32,
     pub frames_draw_calls : usize,
 
+    pub instances_drawn : usize,
+
     pub bytes_to_gpu : usize,
 }
 
@@ -14,6 +16,8 @@ impl EngineStats {
             fps : 0.0,
             frames_draw_calls : 0,
             frames_render_time : 0.0,
+
+            instances_drawn : 0,
 
             bytes_to_gpu : 0,
         }

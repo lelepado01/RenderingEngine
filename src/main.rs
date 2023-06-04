@@ -1,5 +1,5 @@
 use engine::{utils, env::light::LightData};
-use game::tilemap::PositionalTileMap;
+use game::{tilemap::PositionalTileMap, octree::Octree};
 use imgui::*;
 use winit::{
     event::{ElementState, Event, KeyboardInput, WindowEvent},
@@ -14,17 +14,28 @@ mod physics;
 fn main() {
     env_logger::init();
 
-    let event_loop = EventLoop::new();
+    let event_loop = EventLoop::new(); 
     let mut engine = engine::engine::EngineData::new(&event_loop);
     
     let mut camera = engine::camera::fps_camera::FpsCamera::new([0.0, 150.0, 0.0], engine.get_window_size().0 as f32 / engine.get_window_size().1 as f32);
 
     let light = LightData::new([0.0, 15.0, 0.0]);
 
-    let mut tilemap = PositionalTileMap::new();
+    let mut tilemap = Octree::new();
+
+    for x in 0..64 {
+        for z in 0..64 {
+            for y in 0..64 {
+                if x < 36 && z < 36 && y < 36 {
+                    tilemap.insert(x, y, z, 1);
+                }
+            }
+        }
+    }
+
     let tilemodels = tilemap.as_model(&engine);
 
-    let entity_data = EntityData::new(vec![light], vec![tilemodels], vec![], vec![]);
+    let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![], vec![]);
 
     let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &camera, &entity_data);
 
@@ -92,7 +103,7 @@ fn main() {
                 // tilemap.update(&camera.position.into());
 
                 let tilemodels = tilemap.as_model(&engine);
-                let entity_data = EntityData::new(vec![light], vec![tilemodels], vec![], vec![]);
+                let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![], vec![]);
 
                 mesh_engine.update(&engine.get_device(), &camera, &entity_data); 
 
@@ -110,6 +121,7 @@ fn main() {
                         ui.text(format!("Frame time: {} ms", engine.engine_stats.frames_render_time));
                         ui.text(format!("Draw Calls: {}", engine.engine_stats.frames_draw_calls));
                         ui.text(format!("Bytes to GPU: {}", engine.engine_stats.bytes_to_gpu));
+                        ui.text(format!("Instances in scene: {}", engine.engine_stats.instances_drawn));
 
                         if ui.button("Quit"){
                             *control_flow = ControlFlow::Exit;

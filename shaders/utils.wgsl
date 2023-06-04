@@ -6,7 +6,8 @@ struct InstancedVertexInput {
 }
 
 struct InstanceInput {
-    @location(3) instance_material_id: u32,
+    @location(3) instance_position: vec4<f32>,
+    @location(4) instance_material_id: vec4<f32>,
 }
 
 struct TerrainVertexOutput {

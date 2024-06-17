@@ -48,7 +48,7 @@ impl<'a> PipelineBuilder<'a> {
             source: wgpu::ShaderSource::Wgsl(shaders::compile_shader(shader_path).into()),
         };
         self.fragment_code = Some(device.create_shader_module(shader_mod_desc));
-        self.fragment_configs = Some(configs.clone());
+        self.fragment_configs = Some(*configs); 
 
         self
     }
@@ -73,7 +73,7 @@ impl<'a> PipelineBuilder<'a> {
         let vertex_state : wgpu::VertexState = wgpu::VertexState {
             module: &self.vertex_code.unwrap(),
             entry_point: "vs_main",
-            buffers: &buffers,
+            buffers,
         };
 
         let fragment_state : wgpu::FragmentState = wgpu::FragmentState {
@@ -129,7 +129,7 @@ pub fn create_render_pass<'a>(
         label: None,
         color_attachments: &[
             Some(wgpu::RenderPassColorAttachment {
-                view: &view,
+                view,
                 resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Clear(
@@ -140,7 +140,7 @@ pub fn create_render_pass<'a>(
             })
         ],
         depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-            view: &depth_texture_view,
+            view: depth_texture_view,
             depth_ops: Some(wgpu::Operations {
                 load: wgpu::LoadOp::Clear(1.0),
                 store: true,

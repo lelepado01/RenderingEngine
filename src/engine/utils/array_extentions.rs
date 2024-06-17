@@ -13,9 +13,7 @@ impl ToArray4 for [f32; 3] {
 
     fn to_arr4(self) -> [f32; 4] {
         let mut result = [0.0; 4];
-        for i in 0..3 {
-            result[i] = self[i];
-        }
+        result[..3].copy_from_slice(&self[..]);
         result
     }
 }

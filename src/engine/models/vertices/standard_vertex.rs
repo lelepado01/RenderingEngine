@@ -53,13 +53,13 @@ impl VertexData for StandardModelVertex {
 
 impl Parsable for StandardModelVertex {
     fn from_mesh(index : usize, mesh : &tobj::Mesh) -> Self {
-        if mesh.normals.len() == 0 {
-            return StandardModelVertex {
+        if mesh.normals.is_empty() {
+            StandardModelVertex {
                 _pos: [ mesh.positions[index * 3], mesh.positions[index * 3 + 1], mesh.positions[index * 3 + 2], 1.0],
                 _tex_coord: [mesh.texcoords[index * 2], mesh.texcoords[index * 2 + 1]],
                 _normal: [0.0, 0.0, 0.0, 1.0],
             }
-        } else if mesh.texcoords.len() == 0 {
+        } else if mesh.texcoords.is_empty() {
             return StandardModelVertex {
                 _pos: [mesh.positions[index * 3],mesh.positions[index * 3 + 1],mesh.positions[index * 3 + 2],1.0],
                 _tex_coord: [0.0, 0.0],

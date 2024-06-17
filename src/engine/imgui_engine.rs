@@ -1,9 +1,9 @@
-use std::time::{Duration};
+use std::time::Duration;
 
-use imgui::{FontSource};
+use imgui::FontSource;
 use imgui_wgpu::{Renderer, RendererConfig};
 use wgpu::{TextureView, Device, SurfaceConfiguration};
-use winit::window::{Window};
+use winit::window::Window;
 
 pub struct ImguiEngine{
     pub imgui_context: imgui::Context,
@@ -19,7 +19,7 @@ impl ImguiEngine {
         let mut platform = imgui_winit_support::WinitPlatform::init(&mut imgui);
         platform.attach_window(
             imgui.io_mut(),
-            &window,
+            window,
             imgui_winit_support::HiDpiMode::Default,
         );
         imgui.set_ini_filename(None);
@@ -41,7 +41,7 @@ impl ImguiEngine {
             ..Default::default()
         };
     
-        let renderer = Renderer::new(&mut imgui, &device, &queue, renderer_config);    
+        let renderer = Renderer::new(&mut imgui, device, queue, renderer_config);    
 
         ImguiEngine {
             imgui_context: imgui,
@@ -54,7 +54,7 @@ impl ImguiEngine {
         self.imgui_context.io_mut().update_delta_time(dt);
 
         self.platform
-            .prepare_frame(self.imgui_context.io_mut(), &window)
+            .prepare_frame(self.imgui_context.io_mut(), window)
             .expect("Failed to prepare frame");
 
     }
@@ -63,7 +63,7 @@ impl ImguiEngine {
         let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
             label: None,
             color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                view: &view,
+                view,
                 resolve_target: None,
                 ops: wgpu::Operations {
                     load: wgpu::LoadOp::Load, 
@@ -74,13 +74,13 @@ impl ImguiEngine {
         });
 
         self.renderer
-            .render(self.imgui_context.render(), &queue, &device, &mut rpass)
+            .render(self.imgui_context.render(), queue, device, &mut rpass)
             .expect("Rendering failed");
 
         drop(rpass);
     }
 
     pub fn handle_event(&mut self, window : &Window, event : &winit::event::Event<()>) {
-        self.platform.handle_event(self.imgui_context.io_mut(), &window, event);
+        self.platform.handle_event(self.imgui_context.io_mut(), window, event);
     }
 }    

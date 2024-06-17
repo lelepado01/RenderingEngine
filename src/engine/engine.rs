@@ -33,7 +33,7 @@ pub struct EngineData {
 
 impl EngineData {
     pub fn new(event_loop : &EventLoop<()>) -> Self {
-        let mut surface_engine = surface_engine::SurfaceEngine::init(&event_loop);
+        let mut surface_engine = surface_engine::SurfaceEngine::init(event_loop);
         let (device, queue) = surface_engine.get_device_and_queue();
         surface_engine.update_surface(&device); 
 
@@ -145,13 +145,11 @@ impl EngineData {
                     self.set_fullscreen(true);
                 }
             }
-        } else {
-            if let Some(index) = self.keys_pressed.iter().position(|&k| k == keycode){
-                self.keys_pressed.remove(index);
+        } else if let Some(index) = self.keys_pressed.iter().position(|&k| k == keycode) {
+            self.keys_pressed.remove(index);
 
-                if keycode == winit::event::VirtualKeyCode::F {
-                    self.set_fullscreen(false);
-                }
+            if keycode == winit::event::VirtualKeyCode::F {
+                self.set_fullscreen(false);
             }
         }
     }
@@ -171,6 +169,6 @@ impl EngineData {
     }
 
     pub fn handle_ui_event(&mut self, event : &Event<()>){
-        self.imgui_engine.handle_event(&self.surface_engine.window, &event); 
+        self.imgui_engine.handle_event(&self.surface_engine.window, event); 
     }
 }

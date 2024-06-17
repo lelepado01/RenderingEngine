@@ -1,5 +1,5 @@
 use crate::engine::buffers::{self, storage_buffer::{self, StorageBuffer}};
-use super::{mesh::Mesh, vertices::{VertexData, instanced_vertex::InstancedModelVertex, Parsable, CalculateNormals}, material::{UnTexturedMaterial}};
+use super::{mesh::Mesh, vertices::{VertexData, instanced_vertex::InstancedModelVertex, Parsable, CalculateNormals}, material::UnTexturedMaterial};
 
 pub struct InstancedModel {
     pub meshes: Vec<Mesh>,
@@ -47,7 +47,7 @@ impl InstancedModel {
             let obj_untextured_materials : Vec<UnTexturedMaterial> = 
                 materials.expect("Failed to load materials")
                     .iter()
-                    .map(|m| UnTexturedMaterial::from(m))
+                    .map(UnTexturedMaterial::from)
                     .collect();
 
             let mut data = Vec::new();
@@ -81,7 +81,7 @@ impl InstancedModel {
         let instance_buffer = buffers::create_buffer(
             device,
             buffers::BufferType::Instance, 
-            &instances,
+            instances,
         ); 
 
         self.instance_buffer = instance_buffer;

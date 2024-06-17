@@ -1,7 +1,6 @@
 
 use image::{RgbaImage, GenericImageView};
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum TextureType {
     Texture2D,
@@ -41,13 +40,13 @@ impl TextureBuilder {
             };
 
             Self {
-                texture_type : texture_type,
+                texture_type,
                 texture_dimensions : wgpu::TextureDimension::D2,
                 texture_format : wgpu::TextureFormat::Rgba8UnormSrgb,
                 texture_usage : wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 pixel_data : diffuse_rgba,
-                image_layout : image_layout,
-                texture_size : texture_size,
+                image_layout,
+                texture_size,
             }
         } else {
             let size = wgpu::Extent3d { 
@@ -57,14 +56,14 @@ impl TextureBuilder {
             };
             
             Self{
-                texture_type : texture_type,
+                texture_type,
                 texture_dimensions : wgpu::TextureDimension::D2,
                 texture_format : wgpu::TextureFormat::Rgba8UnormSrgb,
                 texture_usage : wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                 pixel_data : RgbaImage::new(1, 1),
                 image_layout : wgpu::ImageDataLayout {
                     offset: 0,
-                    bytes_per_row: std::num::NonZeroU32::new(4 * 1),
+                    bytes_per_row: std::num::NonZeroU32::new(4),
                     rows_per_image: std::num::NonZeroU32::new(1),
                 },
                 texture_size : size,
@@ -74,8 +73,8 @@ impl TextureBuilder {
 
     pub fn set_extent(mut self, width : u32, height : u32, depth : u32) -> Self {
         self.texture_size = wgpu::Extent3d {
-            width: width,
-            height: height,
+            width,
+            height,
             depth_or_array_layers: depth,
         };
 
@@ -138,18 +137,3 @@ impl TextureBuilder {
     }
 }
 
-#[allow(dead_code)]
-pub fn create_sampler(device : &wgpu::Device) -> wgpu::Sampler {
-    device.create_sampler(&wgpu::SamplerDescriptor {
-        address_mode_u: wgpu::AddressMode::ClampToEdge,
-        address_mode_v: wgpu::AddressMode::ClampToEdge,
-        address_mode_w: wgpu::AddressMode::ClampToEdge,
-        mag_filter: wgpu::FilterMode::Linear,
-        min_filter: wgpu::FilterMode::Nearest,
-        mipmap_filter: wgpu::FilterMode::Nearest,
-        compare: Some(wgpu::CompareFunction::LessEqual), // 5.
-        lod_min_clamp: 0.0,
-        lod_max_clamp: 100.0,
-        ..Default::default()
-    })
-}

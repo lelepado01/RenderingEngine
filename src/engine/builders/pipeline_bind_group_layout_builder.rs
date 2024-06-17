@@ -1,12 +1,8 @@
-#[allow(dead_code)]
 pub enum LayoutEntryType {
     UniformBuffer,
     StorageBuffer,
-    Texture,
-    Sampler,
 }
 
-#[allow(dead_code)]
 pub enum EntryVisibility {
     Vertex,
     Fragment,
@@ -37,7 +33,7 @@ impl BindGroupLayoutBuilder {
         let entry = match entry_type {
             LayoutEntryType::UniformBuffer => wgpu::BindGroupLayoutEntry {
                 binding: self.binding_count,
-                visibility: visibility,
+                visibility,
                 ty: wgpu::BindingType::Buffer {
                     ty: wgpu::BufferBindingType::Uniform,
                     has_dynamic_offset: false,
@@ -47,28 +43,12 @@ impl BindGroupLayoutBuilder {
             },
             LayoutEntryType::StorageBuffer => wgpu::BindGroupLayoutEntry {
                 binding: self.binding_count,
-                visibility: visibility,
+                visibility,
                 ty: wgpu::BindingType::Buffer {
                     ty: wgpu::BufferBindingType::Storage { read_only: false },
                     has_dynamic_offset: false,
                     min_binding_size: wgpu::BufferSize::new(size),
                 },
-                count: None,
-            },
-            LayoutEntryType::Texture => wgpu::BindGroupLayoutEntry {
-                binding: self.binding_count,
-                visibility: visibility,
-                ty: wgpu::BindingType::Texture {
-                    sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                    view_dimension: wgpu::TextureViewDimension::D2,
-                    multisampled: false,
-                },
-                count: None,
-            },
-            LayoutEntryType::Sampler => wgpu::BindGroupLayoutEntry {
-                binding: self.binding_count,
-                visibility: visibility,
-                ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
                 count: None,
             },
         };

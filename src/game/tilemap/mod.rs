@@ -1,13 +1,8 @@
 mod chunk;
 mod tile;
-mod aesthetics;
 
 use crate::engine::{models::{vertices::instance_data::PositionInstanceData, instanced_model::{InstancedModel, self}}, engine::EngineData, utils::array_math::ScalarMul};
 use crate::physics::get_distance; 
-
-const MAP_SIZE_X : usize = 5400;
-const MAP_SIZE_Y : usize = 2700;
-const MAP_HEIGHT : f32 = 250.0;
 
 pub struct TileMap {
     pub chunks: Vec<chunk::TileChunk>,
@@ -16,8 +11,6 @@ pub struct TileMap {
     chunk_size : f32,
     tile_size : f32,
     model: std::option::Option<InstancedModel>,
-
-    aesthetics: aesthetics::MapAestheticsParams,
 }
 
 impl TileMap {
@@ -29,7 +22,6 @@ impl TileMap {
             chunk_size: 30.0,
             tile_size: 2.0,
             model: None,
-            aesthetics: aesthetics::MapAestheticsParams::new(),
         };
 
         tilemap.max_distance = tilemap.chunks_in_view as f32 * tilemap.chunk_size * tilemap.tile_size;
@@ -76,20 +68,19 @@ impl TileMap {
 
         let instances : Vec<PositionInstanceData> = self.chunks
             .iter()
-            .map(|x| 
+            .flat_map(|x| 
                 x.tiles
                     .iter()
                     .map(|x| PositionInstanceData { position: [x.position[0], x.position[1], x.position[2], 1.0], material_index: [x.material, 0.0, 0.0, 0.0] })
                     .collect::<Vec<PositionInstanceData>>()
             )
-            .flatten()
             .collect(); 
 
         if self.model.is_some() {
-            self.model.as_mut().unwrap().update_instances(&engine.get_device(), &instances);
+            self.model.as_mut().unwrap().update_instances(engine.get_device(), &instances);
         } else {
             self.model = Some(instanced_model::InstancedModel::new(
-                &engine.get_device(), 
+                engine.get_device(), 
                 "assets/cube.obj", 
                 instances,
             )); 
@@ -113,24 +104,19 @@ impl TileMap {
         (pos - self.chunks_in_view)..(pos + self.chunks_in_view)
     }
 
-    pub fn map_height_function(&mut self, x : f32, y : f32) -> f32 {
-        self.aesthetics.get_height_from(x, y)
-    }
+    // pub fn map_color_function(&self, x : f32, y : f32, height : f32) -> f32 {
 
-    pub fn map_color_function(&self, x : f32, y : f32, height : f32) -> f32 {
-
-        let r = self.aesthetics.get_material_from(x, y, height); 
-
-        if r < 0.4 {
-            return 0.0;
-        } else if r < 0.5 {
-            return 1.0;
-        } else if r < 0.6 {
-            return 2.0;
-        } else {
-            return 3.0;
-        }
+    //     let r = (x + y + height) / 100.0;
+    //     if r < 0.4 {
+    //         0.0
+    //     } else if r < 0.5 {
+    //         1.0
+    //     } else if r < 0.6 {
+    //         2.0
+    //     } else {
+    //         3.0
+    //     }
         
-    }
+    // }
 
 }

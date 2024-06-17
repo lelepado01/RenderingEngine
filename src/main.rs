@@ -1,4 +1,4 @@
-use engine::{utils, env::light::LightData};
+use engine::utils;
 use game::tilemap::TileMap;
 use imgui::*;
 use winit::{
@@ -8,25 +8,26 @@ use winit::{
 use crate::engine::entity_data::EntityData;
 
 mod engine;
-mod game; 
 mod physics;
+mod game; 
+use engine::engine::EngineData;
+use engine::mesh_engine::MeshEngine;
+use game::player::Player;
 
 fn main() {
     env_logger::init();
 
     let event_loop = EventLoop::new();
-    let mut engine = engine::engine::EngineData::new(&event_loop);
+    let mut engine = EngineData::new(&event_loop);
     
-    let mut player = game::player::Player::new(&engine);
-
-    let light = LightData::new([0.0, 15.0, 0.0]);
+    let mut player = Player::new(&engine);
 
     let mut tilemap = TileMap::new();
     let tilemodels = tilemap.as_model(&engine);
 
-    let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![&player.model]);
+    let entity_data = EntityData::new(vec![&tilemodels], vec![]);
 
-    let mut mesh_engine = engine::mesh_engine::MeshEngine::init(&engine.get_device(), &engine.surface_engine.get_surface_desc(), &player.camera, &entity_data);
+    let mut mesh_engine = MeshEngine::init(engine.get_device(), &engine.surface_engine.get_surface_desc(), &player.camera, &entity_data);
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = utils::get_control_flow_status();
@@ -92,16 +93,16 @@ fn main() {
                 tilemap.update(&player.position.into());
 
                 let tilemodels = tilemap.as_model(&engine);
-                let entity_data = EntityData::new(vec![light], vec![&tilemodels], vec![&player.model]);
+                let entity_data = EntityData::new(vec![&tilemodels], vec![]);
 
-                mesh_engine.update(&engine.get_device(), &player.camera, &entity_data); 
+                mesh_engine.update(engine.get_device(), &player.camera); 
 
                 let mut encoder = engine.get_encoder();
                 let ui = engine.imgui_engine.imgui_context.frame();
 
                 engine.surface_engine.begin_frame();
 
-                mesh_engine.render(&engine.surface_engine.get_view(), &engine.depth_texture, &mut encoder, &entity_data, &mut engine.engine_stats);
+                mesh_engine.render(engine.surface_engine.get_view(), &engine.depth_texture, &mut encoder, &entity_data);
 
                 ui.window("Utils")
                     .size([400.0, 300.0], Condition::FirstUseEver)

@@ -1,5 +1,5 @@
 use pollster::block_on;
-use winit::{window::Window, event_loop::{EventLoop}, dpi::LogicalSize};
+use winit::{window::Window, event_loop::EventLoop, dpi::LogicalSize};
 
 pub struct SurfaceEngine {
     surface : wgpu::Surface,
@@ -17,7 +17,7 @@ impl SurfaceEngine {
 
         let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
 
-        let window = Window::new(&event_loop).unwrap();
+        let window = Window::new(event_loop).unwrap();
         window.set_inner_size(LogicalSize {
             width: screen_size[0] as f64,
             height: screen_size[1] as f64,
@@ -60,8 +60,8 @@ impl SurfaceEngine {
         wgpu::SurfaceConfiguration {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
             format: wgpu::TextureFormat::Bgra8UnormSrgb,
-            width: self.size.width as u32,
-            height: self.size.height as u32,
+            width: self.size.width,
+            height: self.size.height,
             present_mode: wgpu::PresentMode::Fifo,
             alpha_mode: wgpu::CompositeAlphaMode::Auto,
         }
@@ -84,15 +84,13 @@ impl SurfaceEngine {
     }
 
     pub fn get_frame(&self) -> std::option::Option<wgpu::SurfaceTexture> {
-        let frame = match self.surface.get_current_texture() {
+        match self.surface.get_current_texture() {
             Ok(frame) => Some(frame),
             Err(e) => {
                 eprintln!("dropped frame: {:?}", e);
-                return None;
+                None
             }
-        };
-
-        frame
+        }
     }
 
     pub fn end_frame(&mut self) {

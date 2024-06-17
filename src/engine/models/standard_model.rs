@@ -1,5 +1,5 @@
 
-use super::{mesh::Mesh, material::{UnTexturedMaterial}, vertices::{standard_vertex::StandardModelVertex, Parsable, CalculateNormals}};
+use super::{mesh::Mesh, material::UnTexturedMaterial, vertices::{standard_vertex::StandardModelVertex, Parsable, CalculateNormals}};
 use crate::engine::buffers::{uniform_buffer::UniformBuffer, material_buffer::MaterialBuffer, self};
 
 pub struct StandardModel {
@@ -45,7 +45,7 @@ impl StandardModel {
         let obj_untextured_materials : Vec<UnTexturedMaterial> =
             materials.expect("Failed to load materials")
                 .iter()
-                .map(|m| UnTexturedMaterial::from(m))
+                .map(UnTexturedMaterial::from)
                 .collect();
     
         Ok(StandardModel { 

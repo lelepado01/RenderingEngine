@@ -1,3 +1,4 @@
+
 use crate::engine::utils::array_math::Add;
 
 use super::{TileMap, tile::Tile};
@@ -30,8 +31,8 @@ impl TileChunk {
                 let x = start_pos[0] + i as f32 * tilemap.tile_size;
                 let z = start_pos[2] + j as f32 * tilemap.tile_size;
 
-                let height = tilemap.map_height_function(x, z);
-                let mat_id : f32 = tilemap.map_color_function(x, z, height);
+                let height = 0.0;
+                let mat_id : f32 = 0.0;
                 chunk.tiles.push(Tile { position: [x, height, z], material: mat_id });
             }
         }

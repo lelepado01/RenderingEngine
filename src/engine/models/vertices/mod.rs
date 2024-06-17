@@ -19,11 +19,11 @@ pub trait Parsable {
 }
 
 pub trait CalculateNormals {
-    fn calculate_normals(&mut self, indices : &Vec<u32>);
+    fn calculate_normals(&mut self, indices : &[u32]);
 }
 
 impl CalculateNormals for Vec<standard_vertex::StandardModelVertex> {
-    fn calculate_normals(&mut self, indices : &Vec<u32>) {
+    fn calculate_normals(&mut self, indices : &[u32]) {
         for i in (0..indices.len()-3).step_by(3) {
             let v1 = self[indices[i] as usize]._pos;
             let v2 = self[indices[i + 1] as usize]._pos;
@@ -36,14 +36,14 @@ impl CalculateNormals for Vec<standard_vertex::StandardModelVertex> {
             self[indices[i + 2] as usize]._normal.add(normal);
         }
 
-        for i in 0..self.len() {
-            self[i]._normal = self[i]._normal.scalar_div(3.0);
+        for i in self.iter_mut() {
+            i._normal = i._normal.scalar_div(3.0);
         }
     }
 }
 
 impl CalculateNormals for Vec<instanced_vertex::InstancedModelVertex> {
-    fn calculate_normals(&mut self, indices : &Vec<u32>) {
+    fn calculate_normals(&mut self, indices : &[u32]) {
         for i in (0..indices.len()-3).step_by(3) {
             let v1 = self[indices[i] as usize]._pos;
             let v2 = self[indices[i + 1] as usize]._pos;

@@ -11,7 +11,6 @@ impl<'a> BindGroupBuilder<'a> {
         }
     }
 
-    #[allow(dead_code)]
     pub fn add_texture_entry(&mut self, texture: &'a wgpu::TextureView) -> &mut Self {
         let binding = self.entries.len() as u32;
 
@@ -23,7 +22,6 @@ impl<'a> BindGroupBuilder<'a> {
         self
     }
 
-    #[allow(dead_code)]
     pub fn add_sampler_entry(&mut self, sampler: &'a wgpu::Sampler) -> &mut Self {
         let binding = self.entries.len() as u32;
 
@@ -67,7 +65,7 @@ impl<'a> BindGroupBuilder<'a> {
 
     pub fn build(&self, device: &wgpu::Device, layout : &wgpu::BindGroupLayout) -> wgpu::BindGroup {
         device.create_bind_group(&wgpu::BindGroupDescriptor {
-            layout: layout,
+            layout,
             entries: &self.entries,
             label: None,
         })

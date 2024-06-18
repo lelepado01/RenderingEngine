@@ -6,7 +6,6 @@ use super::VertexData;
 #[derive(Clone, Copy, Pod, Zeroable, Debug)]
 pub struct PositionInstanceData {
     pub position: [f32; 4],
-    pub material_index: [f32; 4],
 }
 
 impl VertexData for PositionInstanceData {
@@ -17,12 +16,7 @@ impl VertexData for PositionInstanceData {
             attributes: &[
                 wgpu::VertexAttribute {
                     offset: 0,
-                    shader_location: 3,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: std::mem::size_of::<[f32; 4]>() as wgpu::BufferAddress,
-                    shader_location: 4,
+                    shader_location: 1,
                     format: wgpu::VertexFormat::Float32x4,
                 },
             ]

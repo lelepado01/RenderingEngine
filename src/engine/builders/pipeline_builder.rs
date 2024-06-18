@@ -1,4 +1,4 @@
-use crate::engine::{shaders, models::vertices::VertexType};
+use crate::engine::{shaders, models::instance::VertexType};
 
 
 pub struct PipelineBuilder<'a> {

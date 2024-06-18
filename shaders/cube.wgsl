@@ -1,5 +1,16 @@
 
-#include "utils.wgsl";
+
+struct InstancedVertexInput {
+    @location(0) v_position: vec4<f32>,
+}
+struct InstanceInput {
+    @location(1) i_position: vec4<f32>,
+}
+
+struct TerrainVertexOutput {
+    @builtin(position) position: vec4<f32>,
+    @location(1) original_position: vec3<f32>,
+};
 
 struct CameraData {
     transform: mat4x4<f32>,
@@ -24,11 +35,8 @@ fn vs_main(
 ) -> TerrainVertexOutput {
 
     var out: TerrainVertexOutput;
-    out.normal = vertex_input.normal.xyz;
-    out.tex_coords = vertex_input.tex_coords;
     out.position = camera_data.transform * (IDENTITY_MATRIX * vertex_input.v_position + instance_input.i_position);
     out.original_position = vertex_input.v_position.xyz + instance_input.i_position.xyz;
-    out.material_id = instance_input.instance_material_id.x;
     return out;
 }
 

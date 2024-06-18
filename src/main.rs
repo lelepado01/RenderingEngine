@@ -1,17 +1,13 @@
-use engine::utils;
-use game::tilemap::TileMap;
+use engine::{utils, voxel_engine::VoxelEngine};
 use imgui::*;
 use winit::{
     event::{ElementState, Event, KeyboardInput, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
 };
-use crate::engine::entity_data::EntityData;
 
 mod engine;
-mod physics;
 mod game; 
 use engine::engine::EngineData;
-use engine::mesh_engine::MeshEngine;
 use game::player::Player;
 
 fn main() {
@@ -22,12 +18,7 @@ fn main() {
     
     let mut player = Player::new(&engine);
 
-    let mut tilemap = TileMap::new();
-    let tilemodels = tilemap.as_model(&engine);
-
-    let entity_data = EntityData::new(vec![&tilemodels], vec![]);
-
-    let mut mesh_engine = MeshEngine::init(engine.get_device(), &engine.surface_engine.get_surface_desc(), &player.camera, &entity_data);
+    let mut mesh_engine = VoxelEngine::init(engine.get_device(), &engine.surface_engine.get_surface_desc(), &player.camera);
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = utils::get_control_flow_status();
@@ -90,10 +81,6 @@ fn main() {
                 engine.update();
                 let delta_time = engine.delta_time(); 
                 player.update(delta_time, &engine);
-                tilemap.update(&player.position.into());
-
-                let tilemodels = tilemap.as_model(&engine);
-                let entity_data = EntityData::new(vec![&tilemodels], vec![]);
 
                 mesh_engine.update(engine.get_device(), &player.camera); 
 
@@ -102,7 +89,7 @@ fn main() {
 
                 engine.surface_engine.begin_frame();
 
-                mesh_engine.render(engine.surface_engine.get_view(), &engine.depth_texture, &mut encoder, &entity_data);
+                mesh_engine.render(engine.surface_engine.get_view(), &engine.depth_texture, &mut encoder, &player.camera);
 
                 ui.window("Utils")
                     .size([400.0, 300.0], Condition::FirstUseEver)

@@ -13,14 +13,14 @@ pub struct SurfaceEngine {
 impl SurfaceEngine {
 
     pub fn init(event_loop : &EventLoop<()>) -> Self {
-        let screen_size = [1280, 720];
+        let screen_size = [1440.0, 720.0];
 
         let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
 
         let window = Window::new(event_loop).unwrap();
         window.set_inner_size(LogicalSize {
-            width: screen_size[0] as f64,
-            height: screen_size[1] as f64,
+            width: screen_size[0],
+            height: screen_size[1],
         });
         window.set_title("Rendering Engine");
 

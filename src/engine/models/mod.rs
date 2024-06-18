@@ -1,7 +1,5 @@
 
-pub mod vertices;
+pub mod instance;
 pub mod mesh; 
-pub mod standard_model;
-pub mod instanced_model;
-pub mod material;
+pub mod voxel_face_model;
 pub mod rendering;

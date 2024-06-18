@@ -1,6 +1,5 @@
 pub mod uniform_buffer;
 pub mod storage_buffer;
-pub mod material_buffer;
 
 use wgpu::util::DeviceExt; 
 
@@ -17,7 +16,7 @@ pub enum BufferType {
 pub fn create_buffer<T>(
     device: &wgpu::Device,
     buffer_type: BufferType,
-    data: &Vec<T>,
+    data: &[T],
 ) -> wgpu::Buffer
 where T : bytemuck::Pod + bytemuck::Zeroable
 {

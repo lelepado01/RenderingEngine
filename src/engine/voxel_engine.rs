@@ -114,9 +114,8 @@ impl VoxelEngine {
         bind_index_offset += self.storage_buffers.len();
 
         let camera_dir = camera.forward; 
-
         for (i, direction) in DIRECTION_VECTORS.iter().enumerate() {
-            if direction.dot(camera_dir) >= -0.5 {
+            if direction.dot(camera_dir) >= 0.0 {
                 rpass.draw_voxel_instanced(bind_index_offset as u32, &self.voxel_models[i]);
             }
         }

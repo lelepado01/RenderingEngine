@@ -6,7 +6,7 @@ use crate::engine::surface_engine;
 use crate::engine::imgui_engine;
 
 use super::builders::texture_builder;
-use super::env::time::TimeUtils;
+use super::time::TimeUtils;
 use super::stats::EngineStats;
 
 const EXCLUSIVE_KEYS : [(winit::event::VirtualKeyCode, winit::event::VirtualKeyCode); 6] = [
@@ -86,7 +86,6 @@ impl EngineData {
         self.mouse_position
     }
 
-    #[allow(dead_code)]
     pub fn get_key_pressed(&self, keycode : winit::event::VirtualKeyCode) -> bool {
         self.keys_pressed.contains(&keycode)
     }

@@ -1,4 +1,4 @@
-use cgmath::{vec3, Vector3};
+use cgmath::{vec3, InnerSpace, Vector3};
 use noise::{Perlin, NoiseFn};
 
 use crate::engine::builders::pipeline_layout_builder::PipelineLayoutBuilder;
@@ -131,9 +131,9 @@ impl VoxelEngine {
 
         let camera_dir = camera.forward; 
         for (i, direction) in DIRECTION_VECTORS.iter().enumerate() {
-            // if direction.dot(camera_dir) >= -0.5 {
+            if direction.dot(camera_dir) >= -0.5 {
                 rpass.draw_voxel_instanced(bind_index_offset as u32, &self.voxel_models[i]);
-            // }
+            }
         }
     }
 }

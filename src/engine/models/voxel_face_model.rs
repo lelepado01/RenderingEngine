@@ -83,7 +83,6 @@ impl VoxelFaceModel {
             vertex_data: vertex_buffer,
             index_data: index_buffer,
             num_elements: indices.len() as u32,
-            material_index: 0,
         };
 
         let instance_buffer = buffers::create_buffer(device, buffers::BufferType::Instance, &instances); 

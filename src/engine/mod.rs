@@ -10,6 +10,7 @@ pub mod models;
 pub mod shaders;
 pub mod camera;
 pub mod light;
+mod data;
 
 pub mod voxel_engine;
 pub mod compute_engine;

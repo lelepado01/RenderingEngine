@@ -5,6 +5,7 @@ struct InstancedVertexInput {
 }
 struct InstanceInput {
     @location(1) i_position: vec4<f32>,
+    @location(2) i_size: vec4<f32>,
 }
 
 struct TerrainVertexOutput {
@@ -42,7 +43,7 @@ fn vs_main(
 ) -> TerrainVertexOutput {
 
     var out: TerrainVertexOutput;
-    out.position = camera_data.transform * (IDENTITY_MATRIX * vertex_input.v_position + instance_input.i_position);
+    out.position = camera_data.transform * (IDENTITY_MATRIX * vertex_input.v_position * instance_input.i_size + instance_input.i_position);
     out.original_position = vertex_input.v_position.xyz + instance_input.i_position.xyz;
     out.normal = vec4<f32>(normalize(vertex_input.v_position.xyz), 1.0); 
     return out;

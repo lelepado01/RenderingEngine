@@ -1,16 +1,18 @@
-use cgmath::{vec3, InnerSpace, Vector3};
+use cgmath::{vec3, Vector3};
+use noise::{Perlin, NoiseFn};
 
 use crate::engine::builders::pipeline_layout_builder::PipelineLayoutBuilder;
 use crate::engine::buffers::{uniform_buffer::{UniformBuffer, SetUniformBuffer}, storage_buffer::{StorageBuffer, SetStorageBuffer}};
 use super::buffers::traits::AsUniformBuffer;
 use super::camera::fps_camera::FpsCamera;
-use super::models::instance::instance_data::PositionInstanceData;
+use super::models::instance::instance_data::InstanceData;
 use super::models::instance::{VertexData, VertexType};
 use super::models::instance::voxel_vertex::VoxelVertex;
 use crate::engine::builders::pipeline_builder::PipelineBuilder;
 use crate::engine::builders;
 use crate::engine::models::rendering::DrawModel;
 use super::models::voxel_face_model::{VoxelFaceModel, VoxelFace};
+use crate::engine::data::QuadtreeNode; 
 
 const BACKGROUND_COLOR: [f32; 4] = [ 0.0, 0.0, 0.0, 1.0 ];
 
@@ -30,6 +32,26 @@ pub struct VoxelEngine {
     voxel_models: Vec<VoxelFaceModel>,
 }
 
+fn generate_terrain(quadtree: &mut QuadtreeNode, size: u32, max_height: f32, scale: f64) {
+    let perlin = Perlin::new(42); // Create a new Perlin noise generator
+
+    for i in 1..=size {
+        for z in 1..=size {
+            let x = i as f32;
+            let z = z as f32;
+
+            // Use Perlin noise to determine height
+            let noise_value = perlin.get([x as f64 * scale, z as f64 * scale]); // Get noise value
+            let normalized_height = ((noise_value + 1.0) / 2.0) as f32 * max_height/5.0; // Normalize to range [0, max_height]
+            
+            for j in 1..normalized_height as i32{
+                let pos = Vector3::new(x, j as f32, z); 
+                quadtree.insert_voxel(pos);    
+            }
+        }
+    }
+}
+
 impl VoxelEngine {
     pub fn init(
         device: &wgpu::Device,
@@ -44,16 +66,12 @@ impl VoxelEngine {
             .add_bind_group_layout(&camera_uniform.bind_group_layout)
             .add_bind_group_layout(&light_uniform.bind_group_layout); 
 
-        let mut voxels : Vec<PositionInstanceData> = Vec::new();
-        for i in 0..100 {
-            for z in 0..100 {
-                let x = i as f32;
-                let z = z as f32;
-
-                voxels.push(PositionInstanceData{position:[x, 1.0, z, 1.0]});
-            }
-        }
-
+        let size = 1024; 
+        let height = 200; 
+        let mut quadtree : QuadtreeNode = QuadtreeNode::new(size); 
+        generate_terrain(&mut quadtree, size, height as f32, 0.01);
+        let voxels : Vec<InstanceData> = quadtree.get_data(); 
+        
         let model1 = VoxelFaceModel::new(device, VoxelFace::Bottom, voxels.clone());
         let model2 = VoxelFaceModel::new(device, VoxelFace::Top, voxels.clone());
         let model3 = VoxelFaceModel::new(device, VoxelFace::Left, voxels.clone());
@@ -65,7 +83,7 @@ impl VoxelEngine {
 
         let instanced_pipeline = PipelineBuilder::new()
             .add_vertex_buffer_layout(VoxelVertex::desc())
-            .add_vertex_buffer_layout(PositionInstanceData::desc())
+            .add_vertex_buffer_layout(InstanceData::desc())
             .set_primitive_state(Some(wgpu::Face::Back))
             .set_wireframe_mode(false)  
             .set_vertex_shader(device, "./shaders/cube.wgsl", VertexType::InstancedVertex)
@@ -113,9 +131,9 @@ impl VoxelEngine {
 
         let camera_dir = camera.forward; 
         for (i, direction) in DIRECTION_VECTORS.iter().enumerate() {
-            if direction.dot(camera_dir) >= -0.5 {
+            // if direction.dot(camera_dir) >= -0.5 {
                 rpass.draw_voxel_instanced(bind_index_offset as u32, &self.voxel_models[i]);
-            }
+            // }
         }
     }
 }

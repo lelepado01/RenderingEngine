@@ -1,4 +1,4 @@
-use engine::{utils, voxel_engine::VoxelEngine};
+use engine::{light::DirectionalLight, utils, voxel_engine::VoxelEngine};
 use imgui::*;
 use winit::{
     event::{ElementState, Event, KeyboardInput, WindowEvent},
@@ -15,8 +15,9 @@ fn main() {
     let mut engine = EngineData::new(&event_loop);
     
     let mut player = FpsCamera::new(&engine);
+    let mut light = DirectionalLight::new(); 
 
-    let mut mesh_engine = VoxelEngine::init(engine.get_device(), &engine.surface_engine.get_surface_desc(), &player);
+    let mut mesh_engine = VoxelEngine::init(engine.get_device(), &engine.surface_engine.get_surface_desc(), &player, &light);
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = utils::get_control_flow_status();
@@ -80,7 +81,7 @@ fn main() {
                 let delta_time = engine.delta_time(); 
                 player.update(delta_time, &engine);
 
-                mesh_engine.update(engine.get_device(), &player); 
+                mesh_engine.update(engine.get_device(), &player, &light); 
 
                 let mut encoder = engine.get_encoder();
                 let ui = engine.imgui_engine.imgui_context.frame();
@@ -101,9 +102,24 @@ fn main() {
                         let mut camera_rotation : [f32; 3] = player.forward.into();
                         ui.input_float3("Camera rotation", &mut camera_rotation).build();  
 
+                        player.position = camera_position.into(); 
+                        player.forward = camera_rotation.into(); 
+
                         ui.separator();
 
                         ui.text(format!("FPS: {:.0}", 1.0/delta_time));
+
+                        ui.separator();
+
+                        let mut light_direction : [f32; 3] = light.direction.into();
+                        ui.input_float3("Light Direction", &mut light_direction).build();
+                        let mut light_color : [f32; 3] = light.color.into();
+                        ui.input_float3("Light Color", &mut light_color).build();  
+
+                        light.direction = light_direction.into(); 
+                        light.color = light_color.into(); 
+
+                        ui.separator();
                     }
                 );                 
                 

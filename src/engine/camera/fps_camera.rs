@@ -1,9 +1,9 @@
 
 use cgmath::{Vector3, InnerSpace};
 use winit::event::VirtualKeyCode;
-use crate::engine::{renderer::EngineData, buffers::uniform_buffer::UniformBuffer, utils::vector_extensions::ToPoint3};
+use crate::engine::{buffers::{traits::AsUniformBuffer, uniform_buffer::UniformBuffer}, renderer::EngineData, utils::vector_extensions::ToPoint3};
 
-use super::{Camera, OPENGL_TO_WGPU_MATRIX};
+use super::OPENGL_TO_WGPU_MATRIX;
 
 pub const SENSITIVITY:f32 = 0.05;
 const SPEED : f32 = 50.0; 
@@ -95,9 +95,6 @@ impl FpsCamera {
         }
     } 
 
-}
-
-impl Camera for FpsCamera {
     fn get_view_projection_matrix(&self) -> Vec<[f32; 4]> {
         let view_matrix = cgmath::Matrix4::look_at_rh(
             self.position.to_point3(),
@@ -117,6 +114,9 @@ impl Camera for FpsCamera {
         mx_ref.to_vec()
     }
 
+}
+
+impl AsUniformBuffer for FpsCamera {
     fn as_uniform_buffer(&self, device : &wgpu::Device) -> UniformBuffer {
         let mut camera_data = self.get_view_projection_matrix();
         camera_data.push([self.position.x, self.position.y, self.position.z, 0.0]);

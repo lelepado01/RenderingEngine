@@ -17,45 +17,45 @@ pub enum VoxelFace {
 }
 
 const VERTEX_FACE_UP : [VoxelVertex; 4] = [
-    VoxelVertex { _pos: [0.0, 1.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 1.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [0.0, 1.0, 1.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 1.0, 1.0, 1.0] },
+    VoxelVertex { _pos: [-0.5,  0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5,  0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [-0.5,  0.5,  0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5,  0.5,  0.5,  0.5] },
 ];
 
 const VERTEX_FACE_DOWN : [VoxelVertex; 4] = [
-    VoxelVertex { _pos: [0.0, 0.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 0.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [0.0, 0.0, 1.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 0.0, 1.0, 1.0] },
+    VoxelVertex { _pos: [-0.5, -0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5, -0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [-0.5, -0.5,  0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5, -0.5,  0.5,  0.5] },
 ];
 
 const VERTEX_FACE_LEFT : [VoxelVertex; 4] = [
-    VoxelVertex { _pos: [0.0, 0.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [0.0, 1.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [0.0, 1.0, 1.0, 1.0] },
-    VoxelVertex { _pos: [0.0, 0.0, 1.0, 1.0] },
+    VoxelVertex { _pos: [-0.5, -0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [-0.5,  0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [-0.5,  0.5,  0.5,  0.5] },
+    VoxelVertex { _pos: [-0.5, -0.5,  0.5,  0.5] },
 ];
 
 const VERTEX_FACE_RIGHT : [VoxelVertex; 4] = [
-    VoxelVertex { _pos: [1.0, 0.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 1.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 1.0, 1.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 0.0, 1.0, 1.0] },
+    VoxelVertex { _pos: [ 0.5, -0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5,  0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5,  0.5,  0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5, -0.5,  0.5,  0.5] },
 ];
 
 const VERTEX_FACE_FRONT : [VoxelVertex; 4] = [
-    VoxelVertex { _pos: [0.0, 0.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 0.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 1.0, 0.0, 1.0] },
-    VoxelVertex { _pos: [0.0, 1.0, 0.0, 1.0] },
+    VoxelVertex { _pos: [-0.5, -0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5, -0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5,  0.5, -0.5,  0.5] },
+    VoxelVertex { _pos: [-0.5,  0.5, -0.5,  0.5] },
 ];
 
 const VERTEX_FACE_BACK : [VoxelVertex; 4] = [
-    VoxelVertex { _pos: [0.0, 0.0, 1.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 0.0, 1.0, 1.0] },
-    VoxelVertex { _pos: [1.0, 1.0, 1.0, 1.0] },
-    VoxelVertex { _pos: [0.0, 1.0, 1.0, 1.0] },
+    VoxelVertex { _pos: [-0.5, -0.5,  0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5, -0.5,  0.5,  0.5] },
+    VoxelVertex { _pos: [ 0.5,  0.5,  0.5,  0.5] },
+    VoxelVertex { _pos: [-0.5,  0.5,  0.5,  0.5] },
 ];
 
 impl VoxelFaceModel {
@@ -68,8 +68,8 @@ impl VoxelFaceModel {
     {
         
         let (vertices, indices) = match voxel_face {
-            VoxelFace::Top => (&VERTEX_FACE_UP, &[0, 3, 1, 0, 2, 3]),
             VoxelFace::Bottom => (&VERTEX_FACE_DOWN, &[0, 1, 3, 0, 3, 2]),
+            VoxelFace::Top => (&VERTEX_FACE_UP, &[0, 3, 1, 0, 2, 3]),
             VoxelFace::Left => (&VERTEX_FACE_LEFT, &[0, 2, 1, 0, 3, 2]),
             VoxelFace::Right => (&VERTEX_FACE_RIGHT, &[0, 1, 2, 0, 2, 3]),
             VoxelFace::Front => (&VERTEX_FACE_FRONT, &[0, 2, 1, 0, 3, 2]),

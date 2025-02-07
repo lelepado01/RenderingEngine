@@ -2,8 +2,8 @@ use cgmath::{vec3, InnerSpace, Vector3};
 
 use crate::engine::builders::pipeline_layout_builder::PipelineLayoutBuilder;
 use crate::engine::buffers::{uniform_buffer::{UniformBuffer, SetUniformBuffer}, storage_buffer::{StorageBuffer, SetStorageBuffer}};
+use super::buffers::traits::AsUniformBuffer;
 use super::camera::fps_camera::FpsCamera;
-use super::camera::Camera;
 use super::models::instance::instance_data::PositionInstanceData;
 use super::models::instance::{VertexData, VertexType};
 use super::models::instance::voxel_vertex::VoxelVertex;
@@ -31,27 +31,28 @@ pub struct VoxelEngine {
 }
 
 impl VoxelEngine {
-    pub fn init<T>(
+    pub fn init(
         device: &wgpu::Device,
         config: &wgpu::SurfaceConfiguration,
-        camera: &T,
-    ) -> Self 
-        where T : Camera
-    {
+        camera: &dyn AsUniformBuffer,
+        light : &dyn AsUniformBuffer
+    ) -> Self {
         let camera_uniform = camera.as_uniform_buffer(device);
+        let light_uniform = light.as_uniform_buffer(device); 
 
         let pipeline_layout_builder = PipelineLayoutBuilder::new()
-            .add_bind_group_layout(&camera_uniform.bind_group_layout); 
+            .add_bind_group_layout(&camera_uniform.bind_group_layout)
+            .add_bind_group_layout(&light_uniform.bind_group_layout); 
 
         let mut voxels : Vec<PositionInstanceData> = Vec::new();
-        for i in 0..1000 {
-            for z in 0..1000 {
+        for i in 0..100 {
+            for z in 0..100 {
                 let x = i as f32;
                 let z = z as f32;
 
-                voxels.push(PositionInstanceData{position:[x, 0.0, z, 1.0]});
+                voxels.push(PositionInstanceData{position:[x, 1.0, z, 1.0]});
             }
-    }
+        }
 
         let model1 = VoxelFaceModel::new(device, VoxelFace::Bottom, voxels.clone());
         let model2 = VoxelFaceModel::new(device, VoxelFace::Top, voxels.clone());
@@ -74,20 +75,20 @@ impl VoxelEngine {
 
         VoxelEngine {
             pipelines: vec![instanced_pipeline],
-            uniform_buffers: vec![camera_uniform],
+            uniform_buffers: vec![camera_uniform, light_uniform],
             storage_buffers: vec![],
             voxel_models: vec![model1, model2, model3, model4, model5, model6],
         }
     }
 
-    pub fn update<T>(
+    pub fn update(
         &mut self, 
         device: &wgpu::Device, 
-        camera: &T, 
-    ) 
-        where T : Camera
-    {
+        camera: &dyn AsUniformBuffer, 
+        light : &dyn AsUniformBuffer
+    ) {
         self.uniform_buffers[0] = camera.as_uniform_buffer(device);
+        self.uniform_buffers[1] = light.as_uniform_buffer(device);
     }
 
     pub fn render(
@@ -112,7 +113,7 @@ impl VoxelEngine {
 
         let camera_dir = camera.forward; 
         for (i, direction) in DIRECTION_VECTORS.iter().enumerate() {
-            if direction.dot(camera_dir) >= 0.0 {
+            if direction.dot(camera_dir) >= -0.5 {
                 rpass.draw_voxel_instanced(bind_index_offset as u32, &self.voxel_models[i]);
             }
         }

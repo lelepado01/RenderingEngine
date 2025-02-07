@@ -44,17 +44,14 @@ impl VoxelEngine {
             .add_bind_group_layout(&camera_uniform.bind_group_layout); 
 
         let mut voxels : Vec<PositionInstanceData> = Vec::new();
-        for i in 0..100 {
-            for j in 0..100 {
-                for z in 0..100 {
-                    let x = i as f32;
-                    let y = j as f32;
-                    let z = z as f32;
+        for i in 0..1000 {
+            for z in 0..1000 {
+                let x = i as f32;
+                let z = z as f32;
 
-                    voxels.push(PositionInstanceData{position:[x, y, z, 1.0]});
-                }
+                voxels.push(PositionInstanceData{position:[x, 0.0, z, 1.0]});
             }
-        }
+    }
 
         let model1 = VoxelFaceModel::new(device, VoxelFace::Bottom, voxels.clone());
         let model2 = VoxelFaceModel::new(device, VoxelFace::Top, voxels.clone());

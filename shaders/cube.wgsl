@@ -41,17 +41,6 @@ fn vs_main(
 }
 
 @fragment
-fn fs_main(in: TerrainVertexOutput) -> @location(0) vec4<f32> {
-    
-    var result : vec3<f32> = vec3<f32>(0.0, 0.0, 0.0);
-
-    for (var i = 0; i < 2; i = i + 1) {
-        if (i32(in.original_position.x) % 2 == 0) {
-            result += vec3<f32>(0.1, 0.8, 0.2);
-        } else {
-            result += vec3<f32>(0.1, 0.2, 0.8);
-        }
-    }
-
-    return vec4<f32>(result, 1.0);
+fn fs_main(in: TerrainVertexOutput) -> @location(0) vec4<f32> {    
+    return vec4<f32>(0.1, 0.8, 0.1, 1.0);
 }

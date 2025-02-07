@@ -7,7 +7,6 @@ use crate::engine::imgui_engine;
 
 use super::builders::texture_builder;
 use super::time::TimeUtils;
-use super::stats::EngineStats;
 
 const EXCLUSIVE_KEYS : [(winit::event::VirtualKeyCode, winit::event::VirtualKeyCode); 6] = [
     (winit::event::VirtualKeyCode::W, winit::event::VirtualKeyCode::S),
@@ -28,7 +27,6 @@ pub struct EngineData {
     keys_pressed : Vec<winit::event::VirtualKeyCode>,
     pub depth_texture : wgpu::TextureView,
 
-    pub engine_stats : EngineStats,
 }
 
 impl EngineData {
@@ -58,8 +56,6 @@ impl EngineData {
             mouse_position : (0.0, 0.0),
             keys_pressed : Vec::new(),
             depth_texture,
-
-            engine_stats : EngineStats::new(),
         }
     }
 
@@ -122,8 +118,6 @@ impl EngineData {
     pub fn update(&mut self){
         self.clock.update();
         self.imgui_engine.begin_update(&self.surface_engine.window, self.clock.frame_duration());
-
-        self.engine_stats.update(self.delta_time());
     }
 
     pub fn excl_key_is_pressed(&self, key : winit::event::VirtualKeyCode) -> bool {

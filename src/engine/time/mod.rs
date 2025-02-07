@@ -12,7 +12,8 @@ impl TimeUtils {
         TimeUtils {
             last_frame: Instant::now(),
             delta_s : 0.0,
-            frame_duration : Duration::new(0, 0),
+            frame_duration :
+             Duration::new(0, 0),
             time : 0.0,
         }
     }
@@ -29,13 +30,11 @@ impl TimeUtils {
         self.frame_duration
     }
 
-    #[allow(dead_code)]
-    pub fn fps(&self) -> f32 {
+    pub fn _fps(&self) -> f32 {
         1.0 / self.delta_s
     }
 
-    #[allow(dead_code)]
-    pub fn get_time(&self) -> f32 {
+    pub fn _get_time(&self) -> f32 {
         self.time
     }
 

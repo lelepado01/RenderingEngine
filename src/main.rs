@@ -92,11 +92,6 @@ fn main() {
                 ui.window("Utils")
                     .size([400.0, 300.0], Condition::FirstUseEver)
                     .build(||{
-                        ui.text(format!("FPS: {}", engine.engine_stats.fps));
-                        ui.text(format!("Frame time: {} ms", engine.engine_stats.frames_render_time));
-                        ui.text(format!("Draw Calls: {}", engine.engine_stats.frames_draw_calls));
-                        ui.text(format!("Bytes to GPU: {}", engine.engine_stats.bytes_to_gpu));
-
                         if ui.button("Quit"){
                             *control_flow = ControlFlow::Exit;
                         }
@@ -105,6 +100,10 @@ fn main() {
                         ui.input_float3("Camera position", &mut camera_position).build();
                         let mut camera_rotation : [f32; 3] = player.forward.into();
                         ui.input_float3("Camera rotation", &mut camera_rotation).build();  
+
+                        ui.separator();
+
+                        ui.text(format!("FPS: {:.0}", 1.0/delta_time));
                     }
                 );                 
                 

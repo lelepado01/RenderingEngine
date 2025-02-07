@@ -9,7 +9,7 @@ pub struct UniformBuffer {
 }
 
 impl UniformBuffer {
-    pub fn new<T>(device: &wgpu::Device, data: &Vec<T>, size : u64) -> Self
+    pub fn new<T>(device: &wgpu::Device, data: &[T], size : u64) -> Self
     where 
         T: bytemuck::Pod + bytemuck::Zeroable,
     {
@@ -26,12 +26,11 @@ impl UniformBuffer {
         Self {
             buffers: vec![(buffer, size)],
             bind_group_layout: uniform_layout,
-            bind_group: bind_group,
+            bind_group,
         }
     }
 
-    #[allow(dead_code)]
-    pub fn add_binding<T>(&mut self, device: &wgpu::Device, data: &Vec<T>, size : u64) 
+    pub fn add_binding<T>(&mut self, device: &wgpu::Device, data: &[T], size : u64) 
     where T: bytemuck::Pod + bytemuck::Zeroable,
     {
         let new_buffer = buffers::create_buffer(device, BufferType::Uniform, data);
@@ -57,8 +56,7 @@ impl UniformBuffer {
         self.bind_group = bind_group;
     }
 
-    #[allow(dead_code)]
-    pub fn update<T>(&mut self, device: &wgpu::Device, binding_index : usize, data: &Vec<T>, size : u64) 
+    pub fn update<T>(&mut self, device: &wgpu::Device, binding_index : usize, data: &[T], size : u64) 
     where 
         T: bytemuck::Pod + bytemuck::Zeroable,
     {

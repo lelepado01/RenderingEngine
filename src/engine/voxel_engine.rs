@@ -3,7 +3,7 @@ use noise::{Perlin, NoiseFn};
 
 use crate::engine::builders::pipeline_layout_builder::PipelineLayoutBuilder;
 use crate::engine::buffers::{uniform_buffer::{UniformBuffer, SetUniformBuffer}, storage_buffer::{StorageBuffer, SetStorageBuffer}};
-use super::buffers::traits::AsUniformBuffer;
+use super::buffers::traits::{AsStorageBuffer, AsUniformBuffer};
 use super::camera::fps_camera::FpsCamera;
 use super::models::instance::instance_data::InstanceData;
 use super::models::instance::{VertexData, VertexType};
@@ -13,6 +13,7 @@ use crate::engine::builders;
 use crate::engine::models::rendering::DrawModel;
 use super::models::voxel_face_model::{VoxelFaceModel, VoxelFace};
 use crate::engine::data::QuadtreeNode; 
+use crate::engine::materials::MATERIAL_PALETTE; 
 
 const BACKGROUND_COLOR: [f32; 4] = [ 0.0, 0.0, 0.0, 1.0 ];
 
@@ -61,16 +62,19 @@ impl VoxelEngine {
     ) -> Self {
         let camera_uniform = camera.as_uniform_buffer(device);
         let light_uniform = light.as_uniform_buffer(device); 
+        let material_buffers : StorageBuffer = MATERIAL_PALETTE.as_storage_buffer(device);
 
         let pipeline_layout_builder = PipelineLayoutBuilder::new()
             .add_bind_group_layout(&camera_uniform.bind_group_layout)
-            .add_bind_group_layout(&light_uniform.bind_group_layout); 
+            .add_bind_group_layout(&light_uniform.bind_group_layout)
+            .add_bind_group_layout(&material_buffers.bind_group_layout); 
 
         let size = 1024; 
         let height = 200; 
         let mut quadtree : QuadtreeNode = QuadtreeNode::new(size); 
         generate_terrain(&mut quadtree, size, height as f32, 0.01);
         let voxels : Vec<InstanceData> = quadtree.get_data(); 
+
         
         let model1 = VoxelFaceModel::new(device, VoxelFace::Bottom, voxels.clone());
         let model2 = VoxelFaceModel::new(device, VoxelFace::Top, voxels.clone());
@@ -86,15 +90,15 @@ impl VoxelEngine {
             .add_vertex_buffer_layout(InstanceData::desc())
             .set_primitive_state(Some(wgpu::Face::Back))
             .set_wireframe_mode(false)  
-            .set_vertex_shader(device, "./shaders/cube.wgsl", VertexType::InstancedVertex)
-            .set_fragment_shader(device, "./shaders/cube.wgsl", &config.format)
+            .set_vertex_shader(device, "./shaders/c_main.wgsl", VertexType::InstancedVertex)
+            .set_fragment_shader(device, "./shaders/c_main.wgsl", &config.format)
             .set_pipeline_layout(pipeline_layout)
             .build(device);
 
         VoxelEngine {
             pipelines: vec![instanced_pipeline],
             uniform_buffers: vec![camera_uniform, light_uniform],
-            storage_buffers: vec![],
+            storage_buffers: vec![material_buffers],
             voxel_models: vec![model1, model2, model3, model4, model5, model6],
         }
     }

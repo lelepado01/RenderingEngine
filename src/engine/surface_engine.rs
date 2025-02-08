@@ -1,5 +1,6 @@
 use pollster::block_on;
-use winit::{window::Window, event_loop::EventLoop, dpi::LogicalSize};
+use winit::{dpi::{LogicalPosition, LogicalSize}, event_loop::EventLoop, window::Window};
+use crate::engine::consts::{SCREEN_HEIGHT, SCREEN_WIDTH}; 
 
 pub struct SurfaceEngine {
     surface : wgpu::Surface,
@@ -13,16 +14,16 @@ pub struct SurfaceEngine {
 impl SurfaceEngine {
 
     pub fn init(event_loop : &EventLoop<()>) -> Self {
-        let screen_size = [1440.0, 720.0];
 
         let instance = wgpu::Instance::new(wgpu::Backends::PRIMARY);
 
         let window = Window::new(event_loop).unwrap();
         window.set_inner_size(LogicalSize {
-            width: screen_size[0],
-            height: screen_size[1],
+            width: SCREEN_WIDTH,
+            height: SCREEN_HEIGHT,
         });
-        window.set_title("Rendering Engine");
+        window.set_outer_position(LogicalPosition::new(0.0, 0.0));
+        window.set_title("Voxel Rendering Engine");
 
         let size = window.inner_size();
         let surface = unsafe { instance.create_surface(&window) };

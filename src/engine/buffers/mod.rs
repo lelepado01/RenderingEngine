@@ -26,7 +26,7 @@ where T : bytemuck::Pod + bytemuck::Zeroable
         BufferType::Index => wgpu::BufferUsages::INDEX,
         BufferType::Uniform => wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         BufferType::Instance => wgpu::BufferUsages::VERTEX,
-        BufferType::Storage => wgpu::BufferUsages::STORAGE,
+        BufferType::Storage => wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
     };
     
     device.create_buffer_init(&wgpu::util::BufferInitDescriptor {

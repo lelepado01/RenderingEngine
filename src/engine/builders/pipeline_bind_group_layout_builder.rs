@@ -45,7 +45,7 @@ impl BindGroupLayoutBuilder {
                 binding: self.binding_count,
                 visibility,
                 ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Storage { read_only: false },
+                    ty: wgpu::BufferBindingType::Storage { read_only: true },
                     has_dynamic_offset: false,
                     min_binding_size: wgpu::BufferSize::new(size),
                 },
